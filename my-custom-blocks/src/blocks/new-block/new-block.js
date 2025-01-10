@@ -2,7 +2,10 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { BlockControls, AlignmentToolbar } from '@wordpress/block-editor';
 
-registerBlockType('my-custom/my-new-block', {
+import './editor.scss';
+import './style.scss';
+
+registerBlockType('nettl/my-new-block', {
     title: 'My New Block',
     icon: 'smiley',
     category: 'common',

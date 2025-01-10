@@ -7,10 +7,10 @@ Author: Ryan Simms
 */
 
 // Enqueue block assets
-function my_custom_block_register_block() {
-    // Register block editor script
+function nettl_blocks_register_block() {
+    // Register block editor script (shared script for multiple blocks)
     wp_register_script(
-        'my-custom-block-editor-script',
+        'nettl-blocks-editor-script',
         plugins_url( 'build/index.js', __FILE__ ),
         array( 'wp-blocks', 'wp-element', 'wp-editor' ),
         filemtime( plugin_dir_path( __FILE__ ) . 'build/index.js' )
@@ -18,7 +18,7 @@ function my_custom_block_register_block() {
 
     // Register block editor styles
     wp_register_style(
-        'my-custom-block-editor-style',
+        'nettl-blocks-editor-style',
         plugins_url( 'build/index.css', __FILE__ ),
         array( 'wp-edit-blocks' ),
         filemtime( plugin_dir_path( __FILE__ ) . 'build/index.css' )
@@ -26,15 +26,30 @@ function my_custom_block_register_block() {
 
     // Register front-end styles
     wp_register_style(
-        'my-custom-block-style',
+        'nettl-blocks-style',
         plugins_url( 'build/style-index.css', __FILE__ ),
         array(),
         filemtime( plugin_dir_path( __FILE__ ) . 'build/style-index.css' )
     );
 
-    // Enqueue additional script for animation if needed
+    // List of blocks to register
+    $blocks = array( 'bar-chart', 'new-block', 'testimonials' );
+
+    // Dynamically register blocks
+    foreach ( $blocks as $block ) {
+        register_block_type(
+            "nettl/{$block}",
+            array(
+                'editor_script' => 'nettl-blocks-editor-script',
+                'editor_style'  => 'nettl-blocks-editor-style',
+                'style'         => 'nettl-blocks-style',
+            )
+        );
+    }
+
+    // Additional scripts for functionality
     wp_enqueue_script(
-        'my-custom-block-js', 
+        'bar-animation-script',
         plugins_url( 'bar-animation.js', __FILE__ ),
         array( 'jquery' ),
         false,
@@ -42,28 +57,12 @@ function my_custom_block_register_block() {
     );
 
     wp_enqueue_script(
-        'remove-advanced-panel', 
+        'remove-advanced-panel-script',
         plugins_url( 'remove-advanced-panel.js', __FILE__ ),
         array( 'wp-blocks', 'wp-dom-ready', 'wp-edit-post' ),
         null,
         true
     );
-
-    // Register the block
-    register_block_type( 'my-custom/block', array(
-        'editor_script' => 'my-custom-block-editor-script',
-        'editor_style'  => 'my-custom-block-editor-style',
-        'style'         => 'my-custom-block-style', // Enqueue for front end
-    ) );
 }
 
-add_action( 'init', 'my_custom_block_register_block' );
-
-function disable_advanced_panel( $settings ) {
-    // Set 'show_in_block_settings' to false to remove the advanced tab panel.
-    if (isset($settings['supports']['advanced'])) {
-        $settings['supports']['advanced'] = false;
-    }
-    return $settings;
-}
-add_filter( 'block_editor_settings', 'disable_advanced_panel' );
+add_action( 'init', 'nettl_blocks_register_block' );

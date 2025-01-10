@@ -8,7 +8,10 @@ import {
   TabPanel,
 } from "@wordpress/components";
 
-registerBlockType("my-custom/block", {
+import './editor.scss';
+import './style.scss';
+
+registerBlockType("nettl/block", {
   title: "Bar Chart Comparison",
   icon: "chart-bar",
   category: "design",
