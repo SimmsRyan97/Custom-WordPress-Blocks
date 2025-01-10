@@ -1,0 +1,19 @@
+.bar-chart {
+    width: 100%;
+    .bar {
+        p {
+            margin-bottom: 5px;
+        }
+        .bar-fill {
+            height: 30px;
+            border-radius: 5px;
+            width: 0;
+        }
+    }
+}
+
+.value-indicators {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+}

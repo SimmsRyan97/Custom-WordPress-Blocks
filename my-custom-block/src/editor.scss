@@ -1,0 +1,63 @@
+.text-styling-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+
+    .components-button {
+        border: 1px solid #ccc;
+        background-color: transparent;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-size: 14px;
+
+        &:hover {
+            background-color: #f0f0f0;
+        }
+
+        &.active {
+            background-color: #ccc;
+        }
+
+        &:nth-child(1) {
+            font-weight: bold;
+        }
+
+        &:nth-child(2) {
+            font-style: italic;
+        }
+
+        &:nth-child(3) {
+            text-decoration: underline;
+        }
+    }
+}
+
+.my-custom-tabs .components-tab-panel__tabs {
+    display: flex;
+    justify-content: center;
+}
+
+.my-custom-tabs .components-tab-panel__tabs button {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    height: 75px;
+    color: #4a5568;
+    line-height: 1.8;
+    border: 0;
+    background: #edf2f7;
+    border-top: 1px solid #cbd5e0;
+}
+
+.my-custom-tabs .components-tab-panel__tabs button.active-tab {
+    box-shadow: inset 0 -3px 0px 0px var(--wp-admin-theme-color, #00669b);
+    color: #2d3748;
+    background: #fff;
+}
+
+.my-custom-tabs .components-tab-panel__tabs .dashicons {
+    font-size: 18px; /* Adjust icon size */
+}
