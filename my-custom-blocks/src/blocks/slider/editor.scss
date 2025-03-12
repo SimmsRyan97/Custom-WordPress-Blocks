@@ -1,57 +1,43 @@
-/* Generic Slider Editor Styles */
+/* Editor container */
 .generic-slider-editor {
     padding: 20px;
-    background-color: hsl(0, 0%, 98%);
+    background-color: #f9f9f9;
     border-radius: 5px;
-}
-
-.slider-item {
+  }
+  
+  .slider-preview {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    padding: 10px;
+  }
+  
+  .slider-item {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    margin-bottom: 20px;
-    padding: 10px;
-    background-color: #fff;
+    background: white;
     border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-.slider-item img {
-    max-width: 100px;
+    padding: 10px;
+    min-width: 250px;
+  }
+  
+  .slider-item img {
+    max-width: 100%;
     height: auto;
+    object-fit: cover;
+    max-height: 150px;
     margin-bottom: 10px;
-}
-
-.slider-item .components-button {
-    margin-top: 10px;
-}
-
-.rich-text-editor {
-    margin-top: 10px;
+  }
+  
+  .rich-text-editor {
     font-size: 1.1rem;
     min-height: 50px;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
-}
-
-/* Media Upload Button in Editor */
-.wp-block-rs-generic-slider .components-button {
+  }
+  
+  .button.is-destructive {
     margin-top: 10px;
-}
-
-/* Adjusting the panel body */
-.components-panel__body {
-    padding: 20px;
-}
-
-.components-button.is-primary {
-    background-color: #0073aa;
-    border-color: #0073aa;
-}
-
-.components-button.is-secondary {
-    background-color: #f1f1f1;
-    border-color: #ddd;
-}  
+  }  

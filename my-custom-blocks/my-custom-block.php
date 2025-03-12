@@ -50,7 +50,15 @@ function rs_blocks_register_block() {
     // Additional scripts for functionality
     wp_enqueue_script(
         'bar-animation-script',
-        plugins_url( 'bar-animation.js', __FILE__ ),
+        plugins_url( 'bar-chart/bar-animation.js', __FILE__ ),
+        array( 'jquery' ),
+        false,
+        true
+    );
+
+    wp_enqueue_script(
+        'bar-animation-script',
+        plugins_url( 'slider/slider-navigation.js', __FILE__ ),
         array( 'jquery' ),
         false,
         true

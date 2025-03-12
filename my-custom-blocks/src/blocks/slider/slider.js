@@ -23,6 +23,11 @@ registerBlockType('rs/generic-slider', {
             setAttributes({ slides: [...slides, newSlide] });
         };
 
+        const removeSlide = (index) => {
+            const updatedSlides = slides.filter((_, i) => i !== index);
+            setAttributes({ slides: updatedSlides });
+        };
+
         const updateSlide = (index, key, value) => {
             const updatedSlides = [...slides];
             updatedSlides[index][key] = value;
@@ -40,22 +45,16 @@ registerBlockType('rs/generic-slider', {
                         </PanelRow>
                     </PanelBody>
                 </InspectorControls>
-                <div>
+                <div className="slider-preview">
                     {slides.map((slide, index) => (
                         <div key={index} className="slider-item">
                             <MediaUpload
-                                onSelect={(media) =>
-                                    updateSlide(index, 'image', media.url)
-                                }
+                                onSelect={(media) => updateSlide(index, 'image', media.url)}
                                 allowedTypes={['image']}
                                 render={({ open }) => (
                                     <Button isSecondary onClick={open}>
                                         {slide.image ? (
-                                            <img
-                                                src={slide.image}
-                                                alt={`Slide ${index}`}
-                                                style={{ width: '100px' }}
-                                            />
+                                            <img src={slide.image} alt={`Slide ${index}`} />
                                         ) : (
                                             'Select Image'
                                         )}
@@ -67,6 +66,9 @@ registerBlockType('rs/generic-slider', {
                                 value={slide.text}
                                 onChange={(value) => updateSlide(index, 'text', value)}
                             />
+                            <Button isDestructive onClick={() => removeSlide(index)}>
+                                Remove
+                            </Button>
                         </div>
                     ))}
                 </div>
@@ -80,15 +82,17 @@ registerBlockType('rs/generic-slider', {
             <div className="carousel">
                 <div className="entries">
                     {slides.map((slide, index) => (
-                        <div key={index} className="slider-entry">
-                            {slide.image && <img src={slide.image} alt={`Slide ${index}`} />}
+                        <div key={index} className="slider-entry" id={`slide${index + 1}`}>
+                            <div className="image-container">
+                                {slide.image && <img src={slide.image} alt={`Slide ${index}`} />}
+                            </div>
                             {slide.text && <p>{slide.text}</p>}
                         </div>
                     ))}
                 </div>
                 <div className="markers">
                     {slides.map((_, index) => (
-                        <span key={index} className="marker" data-target={`#slide${index + 1}`} />
+                        <button key={index} className="marker" data-slide={index + 1}></button>
                     ))}
                 </div>
             </div>

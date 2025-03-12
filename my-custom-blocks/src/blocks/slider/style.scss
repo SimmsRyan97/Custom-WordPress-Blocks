@@ -2,65 +2,67 @@
 .carousel {
     position: relative;
     width: 100%;
-}
+    max-height: 300px;
+    overflow: hidden;
+  }
   
-/* Entries (the slides themselves) */
-.entries {
+  /* Entries (the slides) */
+  .entries {
     display: flex;
     scroll-snap-type: x mandatory;
     overflow-x: auto;
     scroll-behaviour: smooth;
     scrollbar-width: none;
-}
-
-.entries * {
+    max-height: 300px;
     width: 100%;
+  }
+  
+  .slider-entry {
     flex: none;
     scroll-snap-align: center;
-    text-align: center;
-}
-
-.slider-entry {
-    padding: 20px;
+    width: 100%;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  /* Image container for scaling */
+  .image-container {
+    width: 100%;
+    max-height: 300px;
+    display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.slider-entry img {
+    overflow: hidden;
+  }
+  
+  .image-container img {
     max-width: 100%;
-    height: auto;
-    margin-bottom: 15px;
-}
-
-.slider-entry p {
-    font-size: 1.2rem;
-    margin: 0;
-}
-
-/* Markers for the slides */
-.markers {
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Markers */
+  .markers {
     position: absolute;
     bottom: 10px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-}
-
-.marker {
+    gap: 10px;
+  }
+  
+  .marker {
     width: 10px;
     height: 10px;
-    margin: 0 5px;
     border-radius: 50%;
     background-color: #bbb;
     cursor: pointer;
-}
-
-.marker:hover {
-    background-color: #444;
-}
-
-.marker.active {
+    border: none;
+  }
+  
+  .marker:hover,
+  .marker.active {
     background-color: #0073aa;
-}  
+  }  
