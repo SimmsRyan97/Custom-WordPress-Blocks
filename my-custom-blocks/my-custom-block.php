@@ -33,7 +33,7 @@ function nettl_blocks_register_block() {
     );
 
     // List of blocks to register
-    $blocks = array( 'bar-chart', 'new-block', 'testimonials' );
+    $blocks = array( 'bar-chart', 'new-block', 'slider' );
 
     // Dynamically register blocks
     foreach ( $blocks as $block ) {

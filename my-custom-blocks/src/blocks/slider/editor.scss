@@ -1,0 +1,57 @@
+/* Generic Slider Editor Styles */
+.generic-slider-editor {
+    padding: 20px;
+    background-color: hsl(0, 0%, 98%);
+    border-radius: 5px;
+}
+
+.slider-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.slider-item img {
+    max-width: 100px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.slider-item .components-button {
+    margin-top: 10px;
+}
+
+.rich-text-editor {
+    margin-top: 10px;
+    font-size: 1.1rem;
+    min-height: 50px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+/* Media Upload Button in Editor */
+.wp-block-nettl-generic-slider .components-button {
+    margin-top: 10px;
+}
+
+/* Adjusting the panel body */
+.components-panel__body {
+    padding: 20px;
+}
+
+.components-button.is-primary {
+    background-color: #0073aa;
+    border-color: #0073aa;
+}
+
+.components-button.is-secondary {
+    background-color: #f1f1f1;
+    border-color: #ddd;
+}  
