@@ -11,7 +11,7 @@ import {
 import './editor.scss';
 import './style.scss';
 
-registerBlockType("nettl/block", {
+registerBlockType("rs/block", {
   title: "Bar Chart Comparison",
   icon: "chart-bar",
   category: "design",

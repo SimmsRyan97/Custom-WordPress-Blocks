@@ -5,7 +5,7 @@ import { Button, PanelBody, PanelRow } from '@wordpress/components';
 import './editor.scss';
 import './style.scss';
 
-registerBlockType('nettl/generic-slider', {
+registerBlockType('rs/generic-slider', {
     title: 'Generic Slider',
     icon: 'images-alt2',
     category: 'widgets',

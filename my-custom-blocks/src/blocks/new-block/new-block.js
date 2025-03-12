@@ -5,7 +5,7 @@ import { BlockControls, AlignmentToolbar } from '@wordpress/block-editor';
 import './editor.scss';
 import './style.scss';
 
-registerBlockType('nettl/my-new-block', {
+registerBlockType('rs/my-new-block', {
     title: 'My New Block',
     icon: 'smiley',
     category: 'common',

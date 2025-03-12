@@ -1,16 +1,16 @@
 <?php
 /*
-Plugin Name: Nettl of Stockport Blocks
+Plugin Name: Ryan Simms Custom Blocks
 Description: Custom Gutenberg blocks.
-Version: 1.0
+Version: 1.0.5
 Author: Ryan Simms
 */
 
 // Enqueue block assets
-function nettl_blocks_register_block() {
+function rs_blocks_register_block() {
     // Register block editor script (shared script for multiple blocks)
     wp_register_script(
-        'nettl-blocks-editor-script',
+        'rs-blocks-editor-script',
         plugins_url( 'build/index.js', __FILE__ ),
         array( 'wp-blocks', 'wp-element', 'wp-editor' ),
         filemtime( plugin_dir_path( __FILE__ ) . 'build/index.js' )
@@ -18,7 +18,7 @@ function nettl_blocks_register_block() {
 
     // Register block editor styles
     wp_register_style(
-        'nettl-blocks-editor-style',
+        'rs-blocks-editor-style',
         plugins_url( 'build/index.css', __FILE__ ),
         array( 'wp-edit-blocks' ),
         filemtime( plugin_dir_path( __FILE__ ) . 'build/index.css' )
@@ -26,7 +26,7 @@ function nettl_blocks_register_block() {
 
     // Register front-end styles
     wp_register_style(
-        'nettl-blocks-style',
+        'rs-blocks-style',
         plugins_url( 'build/style-index.css', __FILE__ ),
         array(),
         filemtime( plugin_dir_path( __FILE__ ) . 'build/style-index.css' )
@@ -38,11 +38,11 @@ function nettl_blocks_register_block() {
     // Dynamically register blocks
     foreach ( $blocks as $block ) {
         register_block_type(
-            "nettl/{$block}",
+            "rs/{$block}",
             array(
-                'editor_script' => 'nettl-blocks-editor-script',
-                'editor_style'  => 'nettl-blocks-editor-style',
-                'style'         => 'nettl-blocks-style',
+                'editor_script' => 'rs-blocks-editor-script',
+                'editor_style'  => 'rs-blocks-editor-style',
+                'style'         => 'rs-blocks-style',
             )
         );
     }
@@ -65,4 +65,4 @@ function nettl_blocks_register_block() {
     );
 }
 
-add_action( 'init', 'nettl_blocks_register_block' );
+add_action( 'init', 'rs_blocks_register_block' );
