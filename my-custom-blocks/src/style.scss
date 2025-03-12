@@ -18,13 +18,13 @@
     padding: 10px 0;
 }
 
-.testimonial-carousel {
+.slider-carousel {
     display: flex;
     overflow-x: auto;
     gap: 15px;
 }
 
-.testimonial-carousel .testimonial-item {
+.slider-carousel .slider-item {
     min-width: 300px;
     border: 1px solid #ddd;
     padding: 15px;
@@ -34,12 +34,12 @@
     flex-shrink: 0;
 }
 
-.testimonial-carousel img {
+.slider-carousel img {
     max-width: 80px;
     height: auto;
     margin-bottom: 10px;
 }
 
-.testimonial-carousel .testimonial-content {
+.slider-carousel .slider-content {
     text-align: left;
 }
