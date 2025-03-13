@@ -10,7 +10,11 @@ import {
 
 import './editor.scss';
 import './style.scss';
-import './bar-animation.js';
+import { animateBars } from "./bar-animation.js";
+
+document.addEventListener("DOMContentLoaded", () => {
+    animateBars();
+});
 
 registerBlockType("rs/block", {
   title: "Bar Chart Comparison",

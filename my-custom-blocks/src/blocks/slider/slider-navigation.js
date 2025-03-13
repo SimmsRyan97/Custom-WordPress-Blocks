@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+export function sliderNavigation() {
     const markers = document.querySelectorAll(".marker");
     const entries = document.querySelector(".entries");
 
@@ -13,4 +13,4 @@ document.addEventListener("DOMContentLoaded", function () {
             marker.classList.add("active");
         });
     });
-});
+}
