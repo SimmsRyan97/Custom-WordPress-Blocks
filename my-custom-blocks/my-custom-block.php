@@ -69,9 +69,9 @@ function rs_enqueue_frontend_scripts() {
     if (has_block('rs/bar-chart', $content)) {
         wp_enqueue_script(
             'bar-animation',
-            plugin_dir_url(__FILE__) . 'src/blocks/bar-chart/bar-animation.js',
+            plugin_dir_url(__FILE__) . 'bar-animation.js',
             array(),
-            filemtime(plugin_dir_path(__FILE__) . 'src/blocks/bar-chart/bar-animation.js'),
+            filemtime(plugin_dir_path(__FILE__) . 'bar-animation.js'),
             true
         );
     }
@@ -79,9 +79,9 @@ function rs_enqueue_frontend_scripts() {
     if (has_block('rs/generic-slider', $content)) {
         wp_enqueue_script(
             'slider-nav',
-            plugin_dir_url(__FILE__) . 'src/blocks/slider/slider-navigation.js',
+            plugin_dir_url(__FILE__) . 'slider-navigation.js',
             array(),
-            filemtime(plugin_dir_path(__FILE__) . 'src/blocks/slider/slider-navigation.js'),
+            filemtime(plugin_dir_path(__FILE__) . 'slider-navigation.js'),
             true
         );
     }
