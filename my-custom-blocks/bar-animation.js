@@ -12,5 +12,11 @@ function animateBars() {
     }
 }
 
-// Ensure animation runs only after the DOM is fully loaded
+// Ensure animation runs only after the DOM is fully loaded (only needed once for initial load)
 document.addEventListener('DOMContentLoaded', animateBars);
+
+// Call animateBars after attributes are updated or DOM is re-rendered
+const updateBarsAfterRender = () => {
+    // Ensure animation runs after attribute updates
+    animateBars();
+};

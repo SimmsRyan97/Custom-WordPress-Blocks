@@ -47,11 +47,12 @@ registerBlockType("rs/bar-chart", {
 
     const blockProps = useBlockProps();
 
-    // Toggle styling
-    const toggleBold = () => setAttributes({ isBold: !isBold });
-    const toggleItalic = () => setAttributes({ isItalic: !isItalic });
-    const toggleUnderline = () =>
-      setAttributes({ isUnderlined: !isUnderlined });
+    // Debounced change handler for values
+    const handleChange = (key, value) => {
+      if (!isNaN(value)) {
+        setAttributes({ [key]: parseFloat(value) });
+      }
+    };
 
     // Calculate dynamic color for the first bar (barOne)
     const dynamicBarOneColor =
@@ -76,38 +77,6 @@ registerBlockType("rs/bar-chart", {
     // Ensure the width doesn't go beyond 100% or below 0%
     const adjustedBarTwoWidth = Math.min(100, Math.max(0, barTwoWidth));
     const adjustedBarOneWidth = Math.min(100, Math.max(0, barOneWidth));
-
-    const handleBarOneStartChange = (val) => {
-      // Only allow numeric values, including decimals
-      const regex = /^[0-9]*\.?[0-9]*$/;
-      if (regex.test(val)) {
-        setAttributes({ barOneStart: val });
-      }
-    };
-
-    const handleBarOneEndChange = (val) => {
-      // Only allow numeric values, including decimals
-      const regex = /^[0-9]*\.?[0-9]*$/;
-      if (regex.test(val)) {
-        setAttributes({ barOneEnd: val });
-      }
-    };
-
-    const handleBarTwoStartChange = (val) => {
-      // Only allow numeric values, including decimals
-      const regex = /^[0-9]*\.?[0-9]*$/;
-      if (regex.test(val)) {
-        setAttributes({ barTwoStart: val });
-      }
-    };
-
-    const handleBarTwoEndChange = (val) => {
-      // Only allow numeric values, including decimals
-      const regex = /^[0-9]*\.?[0-9]*$/;
-      if (regex.test(val)) {
-        setAttributes({ barTwoEnd: val });
-      }
-    };
 
     // Apply styles conditionally
     const textStyles = {
@@ -163,12 +132,12 @@ registerBlockType("rs/bar-chart", {
                       <TextControl
                         label="Bar One Start Value"
                         value={barOneStart}
-                        onChange={handleBarOneStartChange}
+                        onChange={(val) => handleChange('barOneStart', val)}
                       />
                       <TextControl
                         label="Bar One End Value"
                         value={barOneEnd}
-                        onChange={handleBarOneEndChange}
+                        onChange={(val) => handleChange('barOneEnd', val)}
                       />
                       <TextControl
                         label="Bar One Text"
@@ -178,12 +147,12 @@ registerBlockType("rs/bar-chart", {
                       <TextControl
                         label="Bar Two Start Value"
                         value={barTwoStart}
-                        onChange={handleBarTwoStartChange}
+                        onChange={(val) => handleChange('barTwoStart', val)}
                       />
                       <TextControl
                         label="Bar Two End Value"
                         value={barTwoEnd}
-                        onChange={handleBarTwoEndChange}
+                        onChange={(val) => handleChange('barTwoEnd', val)}
                       />
                       <TextControl
                         label="Bar Two Text"
@@ -216,19 +185,19 @@ registerBlockType("rs/bar-chart", {
                       <PanelBody title="Text Styling">
                         <div className="text-styling-buttons">
                           <Button
-                            onClick={toggleBold}
+                            onClick={() => setAttributes({ isBold: !isBold })}
                             className={attributes.isBold ? "active" : ""}
                           >
                             B
                           </Button>
                           <Button
-                            onClick={toggleItalic}
+                            onClick={() => setAttributes({ isItalic: !isItalic })}
                             className={attributes.isItalic ? "active" : ""}
                           >
                             I
                           </Button>
                           <Button
-                            onClick={toggleUnderline}
+                            onClick={() => setAttributes({ isUnderlined: !isUnderlined })}
                             className={attributes.isUnderlined ? "active" : ""}
                           >
                             U
@@ -276,11 +245,14 @@ registerBlockType("rs/bar-chart", {
                 style={{
                   backgroundColor: dynamicBarOneColor,
                   width: `${adjustedBarOneWidth}%`,
-                  transition: 'width 2s ease-in-out',
                 }}
-              ></div>
+              />
+              <div className="bar-value">
+                {barOneEnd} {suffix}
+              </div>
             </div>
-            <div className="bar" key={`bar-two-${barTwoEnd}`}>
+
+            <div className="bar" key={`bar-two-${barTwoEnd}`} style={{ marginBottom: "20px" }}>
               <p className="wp-block-paragraph" style={textStyles}>
                 {barTwoText}
               </p>
@@ -289,18 +261,11 @@ registerBlockType("rs/bar-chart", {
                 style={{
                   backgroundColor: barTwoColour,
                   width: `${adjustedBarTwoWidth}%`,
-                  transition: 'width 2s ease-in-out',
                 }}
-              ></div>
-            </div>
-            <div className="value-indicators">
-              <span>
-                {Math.min(parseFloat(barTwoStart), parseFloat(barOneStart))}
-              </span>{" "}
-              <span>
-                {Math.max(parseFloat(barTwoEnd), parseFloat(barOneEnd))}
-                {suffix}
-              </span>
+              />
+              <div className="bar-value">
+                {barTwoEnd} {suffix}
+              </div>
             </div>
           </div>
         </div>
@@ -320,86 +285,50 @@ registerBlockType("rs/bar-chart", {
       isBold,
       isItalic,
       isUnderlined,
-      htmlAnchor,
-      extraClassNames,
     } = attributes;
 
-    const blockProps = useBlockProps.save({
-      id: htmlAnchor || undefined, // Use the anchor if defined
-      className: extraClassNames || undefined, // Add extra class names if defined
-    });
-
-    // Apply styles conditionally
     const textStyles = {
       fontWeight: isBold ? "bold" : "normal",
       fontStyle: isItalic ? "italic" : "normal",
       textDecoration: isUnderlined ? "underline" : "none",
     };
 
-    // Calculate dynamic color for the first bar (barOne)
-    const dynamicBarOneColor =
-      parseFloat(barOneEnd) > parseFloat(barTwoEnd)
-        ? "rgb(1, 170, 41)" // Green if barOneEnd is greater
-        : Math.abs(parseFloat(barOneEnd) - parseFloat(barTwoEnd)) <= 2
-        ? "rgb(1, 170, 41)" // Green for small difference
-        : Math.abs(parseFloat(barOneEnd) - parseFloat(barTwoEnd)) <= 5
-        ? "rgb(231, 181, 0)" // Yellow
-        : "rgb(240, 0, 0)"; // Red
-
-    // Calculate total range for each bar
-    const barTwoRange = parseFloat(barTwoEnd) - parseFloat(barTwoStart);
-    const barOneRange = parseFloat(barOneEnd) - parseFloat(barOneStart);
-
-    // Calculate widths for each bar based on its range
-    const barTwoWidth =
-      (barTwoRange / Math.max(barTwoRange, barOneRange)) * 100;
-    const barOneWidth =
-      (barOneRange / Math.max(barTwoRange, barOneRange)) * 100;
-
-    // Ensure the width doesn't go beyond 100% or below 0%
-    const adjustedBarTwoWidth = Math.min(100, Math.max(0, barTwoWidth));
-    const adjustedBarOneWidth = Math.min(100, Math.max(0, barOneWidth));
-
     return (
-      <div {...blockProps}>
+      <div>
         <div className="bar-chart">
           <div className="bar">
             <p className="wp-block-paragraph" style={textStyles}>
               {barOneText}
             </p>
             <div
-              className="bar-fill animating-bar"
-              data-final-width={adjustedBarOneWidth} // Dynamic width data attribute
+              className="bar-fill"
               style={{
-                backgroundColor: dynamicBarOneColor,
-                width: `${adjustedBarOneWidth}%`, // Use dynamic width
+                backgroundColor: barOneEnd > barTwoEnd ? "rgb(1, 170, 41)" : "rgb(240, 0, 0)",
+                width: `${(barOneEnd - barOneStart) / 100}%`,
               }}
-            ></div>
+            />
+            <div className="bar-value">
+              {barOneEnd} {suffix}
+            </div>
           </div>
+
           <div className="bar">
             <p className="wp-block-paragraph" style={textStyles}>
               {barTwoText}
             </p>
             <div
-              className="bar-fill animating-bar"
-              data-final-width={adjustedBarTwoWidth} // Dynamic width data attribute
+              className="bar-fill"
               style={{
                 backgroundColor: barTwoColour,
-                width: `${adjustedBarTwoWidth}%`, // Use dynamic width
+                width: `${(barTwoEnd - barTwoStart) / 100}%`,
               }}
-            ></div>
-          </div>
-          <div className="value-indicators">
-            <span>
-              {Math.min(parseFloat(barTwoStart), parseFloat(barOneStart))}
-            </span>{" "}
-            <span>
-              {Math.max(parseFloat(barTwoEnd), parseFloat(barOneEnd))}
-              {suffix}
-            </span>
+            />
+            <div className="bar-value">
+              {barTwoEnd} {suffix}
+            </div>
           </div>
         </div>
       </div>
-    );    
+    );
   },
 });
