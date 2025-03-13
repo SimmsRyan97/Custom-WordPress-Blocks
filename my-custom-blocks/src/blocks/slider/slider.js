@@ -4,6 +4,7 @@ import { Button, PanelBody, PanelRow } from '@wordpress/components';
 
 import './editor.scss';
 import './style.scss';
+import './slider-navigation.js';
 
 registerBlockType('rs/generic-slider', {
     title: 'Generic Slider',

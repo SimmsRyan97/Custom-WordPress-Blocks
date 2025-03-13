@@ -10,6 +10,7 @@ import {
 
 import './editor.scss';
 import './style.scss';
+import './bar-animation.js';
 
 registerBlockType("rs/block", {
   title: "Bar Chart Comparison",

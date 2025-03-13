@@ -49,22 +49,6 @@ function rs_blocks_register_block() {
 
     // Additional scripts for functionality
     wp_enqueue_script(
-        'bar-animation-script',
-        plugins_url( 'bar-chart/bar-animation.js', __FILE__ ),
-        array( 'jquery' ),
-        false,
-        true
-    );
-
-    wp_enqueue_script(
-        'bar-animation-script',
-        plugins_url( 'slider/slider-navigation.js', __FILE__ ),
-        array( 'jquery' ),
-        false,
-        true
-    );
-
-    wp_enqueue_script(
         'remove-advanced-panel-script',
         plugins_url( 'remove-advanced-panel.js', __FILE__ ),
         array( 'wp-blocks', 'wp-dom-ready', 'wp-edit-post' ),
