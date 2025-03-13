@@ -289,6 +289,18 @@ registerBlockType("rs/bar-chart", {
       isUnderlined,
     } = attributes;
 
+    // Calculate total range for each bar
+    const barTwoRange = parseFloat(barTwoEnd) - parseFloat(barTwoStart);
+    const barOneRange = parseFloat(barOneEnd) - parseFloat(barOneStart);
+
+    // Calculate widths for each bar based on its range
+    const barTwoWidth = (barTwoRange / Math.max(barTwoRange, barOneRange)) * 100;
+    const barOneWidth = (barOneRange / Math.max(barTwoRange, barOneRange)) * 100;
+
+    // Ensure the width doesn't go beyond 100% or below 0%
+    const adjustedBarTwoWidth = Math.min(100, Math.max(0, barTwoWidth));
+    const adjustedBarOneWidth = Math.min(100, Math.max(0, barOneWidth));
+
     const textStyles = {
       fontWeight: isBold ? "bold" : "normal",
       fontStyle: isItalic ? "italic" : "normal",
