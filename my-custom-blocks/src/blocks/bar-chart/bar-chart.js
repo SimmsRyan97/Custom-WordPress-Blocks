@@ -171,15 +171,17 @@ registerBlockType("rs/bar-chart", {
                   return (
                     <>
                       <PanelBody title="Bar Colour">
-                          <ColorPalette
-                              colors={wp.data.select("core/block-editor").getSettings().colors}
-                              value={barTwoColour}
-                              onChange={(val) => setAttributes({ barTwoColour: val })}
-                          />
-                          <ColorPicker
-                              color={barTwoColour}
-                              onChange={(val) => setAttributes({ barTwoColour: val })}
-                          />
+                        <ColorPalette
+                          colors={wp.data
+                            .select("core/block-editor")
+                            .getSettings().colors}
+                          value={barTwoColour}
+                          onChange={(val) => setAttributes({ barTwoColour: val })}
+                        />
+                        <ColorPicker
+                          color={barTwoColour}
+                          onChange={(val) => setAttributes({ barTwoColour: val })}
+                        />
                       </PanelBody>
 
                       <PanelBody title="Text Styling">
