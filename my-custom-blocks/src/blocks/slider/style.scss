@@ -47,14 +47,13 @@
 
 /* Add padding or margin to the text block if necessary */
 .slider-entry p {
-  margin-top: 10px; /* Space between image and text */
   margin-bottom: 20px; /* Adjust this value for spacing from the markers */
 }
 
 /* Markers */
 .markers {
   position: absolute;
-  bottom: 10px;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   display: flex;

@@ -1,43 +1,53 @@
 /* Editor container */
 .generic-slider-editor {
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 5px;
-  }
-  
-  .slider-preview {
-    display: flex;
-    overflow-x: auto;
-    gap: 15px;
-    padding: 10px;
-  }
-  
-  .slider-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: white;
-    border: 1px solid #ddd;
-    padding: 10px;
-    min-width: 250px;
-  }
-  
-  .slider-item img {
-    max-width: 100%;
-    height: auto;
-    object-fit: cover;
-    max-height: 150px;
-    margin-bottom: 10px;
-  }
-  
-  .rich-text-editor {
-    font-size: 1.1rem;
-    min-height: 50px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-  }
-  
-  .button.is-destructive {
-    margin-top: 10px;
-  }  
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+/* Preview area for the slider */
+.slider-preview {
+  display: flex;
+  overflow-x: auto;
+  gap: 15px;
+  padding: 10px;
+}
+
+/* Individual slider item */
+.slider-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+  border: 1px solid #ddd;
+  padding: 10px;
+  min-width: 250px;
+  max-width: 100%;
+  box-sizing: border-box;
+  /* Ensure that the item grows to accommodate text and image */
+}
+
+/* Image styling inside slider item */
+.slider-item img {
+  width: 100%;            /* Ensure the image scales with the width of the container */
+  max-height: 150px;      /* Maximum height for the image */
+  height: auto;           /* Maintain aspect ratio */
+  object-fit: cover;      /* Scale image without distorting aspect ratio */
+  margin-bottom: 10px;    /* Space between image and text */
+}
+
+/* Rich text editor for testimonial text */
+.rich-text-editor {
+  font-size: 1.1rem;
+  min-height: 50px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100%;            /* Ensure the editor takes full width of the container */
+  box-sizing: border-box; /* Prevent overflow */
+}
+
+/* Button style for destructive actions (remove slide, etc.) */
+.button.is-destructive {
+  margin-top: 10px;
+}
