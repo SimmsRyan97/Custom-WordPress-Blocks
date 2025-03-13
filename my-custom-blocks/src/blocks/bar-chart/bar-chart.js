@@ -267,7 +267,7 @@ registerBlockType("rs/bar-chart", {
 
         <div {...blockProps}>
           <div className="bar-chart">
-            <div className="bar" style={{ marginBottom: "20px" }}>
+            <div className="bar" key={`bar-one-${barOneEnd}`} style={{ marginBottom: "20px" }}>
               <p className="wp-block-paragraph" style={textStyles}>
                 {barOneText}
               </p>
@@ -280,7 +280,7 @@ registerBlockType("rs/bar-chart", {
                 }}
               ></div>
             </div>
-            <div className="bar">
+            <div className="bar" key={`bar-two-${barTwoEnd}`}>
               <p className="wp-block-paragraph" style={textStyles}>
                 {barTwoText}
               </p>
