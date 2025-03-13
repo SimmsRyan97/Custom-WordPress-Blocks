@@ -77,15 +77,17 @@ registerBlockType('rs/generic-slider', {
     },
     save: ({ attributes }) => {
         const { slides } = attributes;
-
+    
         return (
             <div className="carousel">
                 <div className="entries">
                     {slides.map((slide, index) => (
                         <div key={index} className="slider-entry" id={`slide${index + 1}`}>
-                            <div className="image-container">
-                                {slide.image && <img src={slide.image} alt={`Slide ${index}`} />}
-                            </div>
+                            {slide.image && (
+                                <div className="image-container">
+                                    <img src={slide.image} alt={`Slide ${index}`} />
+                                </div>
+                            )}
                             {slide.text && <p>{slide.text}</p>}
                         </div>
                     ))}
@@ -97,5 +99,5 @@ registerBlockType('rs/generic-slider', {
                 </div>
             </div>
         );
-    },
+    },    
 });

@@ -27,6 +27,7 @@
   text-align: center;
   justify-content: flex-start; /* Adjust alignment */
   position: relative;
+  min-height: 100px; /* Ensure the entry has a minimum height for text */
 }
 
 /* Image container for scaling */
@@ -37,6 +38,7 @@
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  margin-bottom: 15px; /* Adds spacing between image and text */
 }
 
 .image-container img {
