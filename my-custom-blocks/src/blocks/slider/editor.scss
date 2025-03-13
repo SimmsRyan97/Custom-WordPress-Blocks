@@ -24,7 +24,12 @@
   min-width: 250px;
   max-width: 100%;
   box-sizing: border-box;
+  gap: 10px;
   /* Ensure that the item grows to accommodate text and image */
+}
+
+.slider-item button {
+  height: 100%;
 }
 
 /* Image styling inside slider item */
@@ -33,18 +38,6 @@
   max-height: 150px;      /* Maximum height for the image */
   height: auto;           /* Maintain aspect ratio */
   object-fit: cover;      /* Scale image without distorting aspect ratio */
-  margin-bottom: 10px;    /* Space between image and text */
-}
-
-/* Rich text editor for testimonial text */
-.rich-text-editor {
-  font-size: 1.1rem;
-  min-height: 50px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  width: 100%;            /* Ensure the editor takes full width of the container */
-  box-sizing: border-box; /* Prevent overflow */
 }
 
 /* Button style for destructive actions (remove slide, etc.) */
