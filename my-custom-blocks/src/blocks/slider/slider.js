@@ -96,7 +96,7 @@ registerBlockType('rs/generic-slider', {
                                 <div>
                                     {/* Render each paragraph separately using RichText.Content */}
                                     {slide.text.split('\n').map((para, i) => (
-                                        <p className="wp-block-paragraph" key={i}>{para}</p>
+                                        <p key={i}>{para}</p>
                                     ))}
                                 </div>
                             )}
