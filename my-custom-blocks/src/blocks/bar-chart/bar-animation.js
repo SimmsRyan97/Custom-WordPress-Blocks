@@ -1,8 +1,16 @@
-export function animateBars() {
-    const bars = document.querySelectorAll('.animating-bar'); // Select bars with this class
-    bars.forEach(bar => {
-        const finalWidth = bar.getAttribute('data-final-width'); // Retrieve final width from data attribute
-        bar.style.transition = 'width 2s ease-in-out'; // Ensure transition effect
-        bar.style.width = finalWidth + '%'; // Set the width to final width
-    });
+function animateBars() {
+    const bars = document.querySelectorAll('.animating-bar');
+
+    if (bars.length > 0) {
+        bars.forEach(bar => {
+            const finalWidth = bar.getAttribute('data-final-width');
+            if (finalWidth) {
+                bar.style.transition = 'width 2s ease-in-out';
+                bar.style.width = finalWidth + '%';
+            }
+        });
+    }
 }
+
+// Ensure animation runs only after the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', animateBars);

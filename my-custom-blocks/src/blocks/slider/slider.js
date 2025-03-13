@@ -4,12 +4,6 @@ import { Button, PanelBody, PanelRow } from '@wordpress/components';
 
 import './editor.scss';
 import './style.scss';
-import { sliderNavigation } from "./slider-navigation.js";
-
-document.addEventListener("DOMContentLoaded", () => {
-    sliderNavigation();
-});
-
 
 registerBlockType('rs/generic-slider', {
     title: 'Generic Slider',

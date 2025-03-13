@@ -1,4 +1,4 @@
-export function sliderNavigation() {
+function sliderNavigation() {
     const markers = document.querySelectorAll(".marker");
     const entries = document.querySelector(".entries");
 
@@ -14,3 +14,6 @@ export function sliderNavigation() {
         });
     });
 }
+
+// Ensure animation runs only after the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', sliderNavigation);

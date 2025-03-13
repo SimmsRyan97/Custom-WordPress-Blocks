@@ -10,13 +10,8 @@ import {
 
 import './editor.scss';
 import './style.scss';
-import { animateBars } from "./bar-animation.js";
 
-document.addEventListener("DOMContentLoaded", () => {
-    animateBars();
-});
-
-registerBlockType("rs/block", {
+registerBlockType("rs/bar-chart", {
   title: "Bar Chart Comparison",
   icon: "chart-bar",
   category: "design",
