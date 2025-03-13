@@ -21,8 +21,7 @@
   background: white;
   border: 1px solid #ddd;
   padding: 10px;
-  min-width: 250px;
-  max-width: 100%;
+  min-width: 100%;  /* Full width in the editor */
   box-sizing: border-box;
   gap: 10px;
   /* Ensure that the item grows to accommodate text and image */

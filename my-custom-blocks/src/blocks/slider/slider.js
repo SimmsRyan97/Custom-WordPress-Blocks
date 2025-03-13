@@ -15,6 +15,7 @@ registerBlockType('rs/generic-slider', {
             default: [],
         },
     },
+
     edit: ({ attributes, setAttributes }) => {
         const { slides } = attributes;
 
@@ -62,6 +63,7 @@ registerBlockType('rs/generic-slider', {
                                 )}
                             />
                             <RichText
+                                tagName="div" // Use div instead of p to allow multiple paragraphs
                                 placeholder="Slide Text"
                                 value={slide.text}
                                 onChange={(value) => updateSlide(index, 'text', value)}
@@ -75,9 +77,10 @@ registerBlockType('rs/generic-slider', {
             </div>
         );
     },
+
     save: ({ attributes }) => {
         const { slides } = attributes;
-    
+
         return (
             <div className="carousel">
                 <div className="entries">
@@ -88,7 +91,14 @@ registerBlockType('rs/generic-slider', {
                                     <img src={slide.image} alt={`Slide ${index}`} />
                                 </div>
                             )}
-                            {slide.text && <p>{slide.text}</p>}
+                            {slide.text && (
+                                <div>
+                                    {/* Render each paragraph separately using RichText.Content */}
+                                    {slide.text.split('\n').map((para, i) => (
+                                        <p key={i}>{para}</p>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
@@ -99,5 +109,5 @@ registerBlockType('rs/generic-slider', {
                 </div>
             </div>
         );
-    },    
+    },
 });
