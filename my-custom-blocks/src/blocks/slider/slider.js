@@ -81,7 +81,7 @@ registerBlockType('rs/generic-slider', {
 
     save: ({ attributes }) => {
         const { slides } = attributes;
-
+    
         return (
             <div className="carousel">
                 <div className="entries">
@@ -93,12 +93,7 @@ registerBlockType('rs/generic-slider', {
                                 </div>
                             )}
                             {slide.text && (
-                                <div>
-                                    {/* Render each paragraph separately using RichText.Content */}
-                                    {slide.text.split('\n').map((para, i) => (
-                                        <p key={i}>{para}</p>
-                                    ))}
-                                </div>
+                                <RichText.Content tagName="div" value={slide.text} />
                             )}
                         </div>
                     ))}
@@ -110,5 +105,5 @@ registerBlockType('rs/generic-slider', {
                 </div>
             </div>
         );
-    },
+    },    
 });
