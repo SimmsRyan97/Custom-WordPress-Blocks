@@ -263,7 +263,7 @@ registerBlockType("rs/bar-chart", {
                 }}
               />
             </div>
-            
+
             <div className="value-indicators">
                 <span>
                   {Math.min(parseFloat(barTwoStart), parseFloat(barOneStart))}
@@ -336,9 +336,6 @@ registerBlockType("rs/bar-chart", {
                 width: `${(barOneEnd - barOneStart) / 100}%`,
               }}
             />
-            <div className="bar-value">
-              {barOneEnd} {suffix}
-            </div>
           </div>
 
           <div className="bar">
@@ -353,10 +350,16 @@ registerBlockType("rs/bar-chart", {
                 width: `${(barTwoEnd - barTwoStart) / 100}%`,
               }}
             />
-            <div className="bar-value">
-              {barTwoEnd} {suffix}
-            </div>
           </div>
+          <div className="value-indicators">
+              <span>
+                {Math.min(parseFloat(barTwoStart), parseFloat(barOneStart))}
+              </span>
+              <span>
+                {Math.max(parseFloat(barTwoEnd), parseFloat(barOneEnd))}
+                {suffix}
+              </span>
+            </div>
         </div>
       </div>
     );
