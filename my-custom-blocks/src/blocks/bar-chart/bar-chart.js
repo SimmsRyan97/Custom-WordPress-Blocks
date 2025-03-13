@@ -301,7 +301,8 @@ registerBlockType("rs/bar-chart", {
               {barOneText}
             </p>
             <div
-              className="bar-fill"
+              className="bar-fill animating-bar"
+              data-final-width={adjustedBarOneWidth}
               style={{
                 backgroundColor: barOneEnd > barTwoEnd ? "rgb(1, 170, 41)" : "rgb(240, 0, 0)",
                 width: `${(barOneEnd - barOneStart) / 100}%`,
@@ -317,7 +318,8 @@ registerBlockType("rs/bar-chart", {
               {barTwoText}
             </p>
             <div
-              className="bar-fill"
+              className="bar-fill animating-bar"
+              data-final-width={adjustedBarTwoWidth}
               style={{
                 backgroundColor: barTwoColour,
                 width: `${(barTwoEnd - barTwoStart) / 100}%`,
