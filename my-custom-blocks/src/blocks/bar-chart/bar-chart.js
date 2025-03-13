@@ -369,10 +369,10 @@ registerBlockType("rs/bar-chart", {
             </p>
             <div
               className="bar-fill animating-bar"
-              data-final-width={adjustedBarOneWidth}
+              data-final-width={adjustedBarOneWidth} // Dynamic width data attribute
               style={{
                 backgroundColor: dynamicBarOneColor,
-                width: `0%`,
+                width: `${adjustedBarOneWidth}%`, // Use dynamic width
               }}
             ></div>
           </div>
@@ -382,10 +382,10 @@ registerBlockType("rs/bar-chart", {
             </p>
             <div
               className="bar-fill animating-bar"
-              data-final-width={adjustedBarTwoWidth}
+              data-final-width={adjustedBarTwoWidth} // Dynamic width data attribute
               style={{
                 backgroundColor: barTwoColour,
-                width: `0%`,
+                width: `${adjustedBarTwoWidth}%`, // Use dynamic width
               }}
             ></div>
           </div>
@@ -400,6 +400,6 @@ registerBlockType("rs/bar-chart", {
           </div>
         </div>
       </div>
-    );
+    );    
   },
 });
