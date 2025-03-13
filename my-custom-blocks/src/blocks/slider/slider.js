@@ -67,6 +67,7 @@ registerBlockType('rs/generic-slider', {
                                 placeholder="Slide Text"
                                 value={slide.text}
                                 onChange={(value) => updateSlide(index, 'text', value)}
+                                multiline="p"  // Allow paragraphs
                             />
                             <Button isDestructive onClick={() => removeSlide(index)}>
                                 Remove
@@ -95,7 +96,7 @@ registerBlockType('rs/generic-slider', {
                                 <div>
                                     {/* Render each paragraph separately using RichText.Content */}
                                     {slide.text.split('\n').map((para, i) => (
-                                        <p key={i}>{para}</p>
+                                        <p className="wp-block-paragraph" key={i}>{para}</p>
                                     ))}
                                 </div>
                             )}
