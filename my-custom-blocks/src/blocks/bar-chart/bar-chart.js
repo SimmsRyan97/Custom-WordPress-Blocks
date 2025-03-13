@@ -289,6 +289,16 @@ registerBlockType("rs/bar-chart", {
       isUnderlined,
     } = attributes;
 
+    // Calculate dynamic color for the first bar (barOne)
+    const dynamicBarOneColor =
+      parseFloat(barOneEnd) > parseFloat(barTwoEnd)
+        ? "rgb(1, 170, 41)" // Green if barOneEnd is greater
+        : Math.abs(parseFloat(barOneEnd) - parseFloat(barTwoEnd)) <= 2
+        ? "rgb(1, 170, 41)" // Green for small difference
+        : Math.abs(parseFloat(barOneEnd) - parseFloat(barTwoEnd)) <= 5
+        ? "rgb(231, 181, 0)" // Yellow
+        : "rgb(240, 0, 0)"; // Red
+
     // Calculate total range for each bar
     const barTwoRange = parseFloat(barTwoEnd) - parseFloat(barTwoStart);
     const barOneRange = parseFloat(barOneEnd) - parseFloat(barOneStart);
@@ -318,7 +328,7 @@ registerBlockType("rs/bar-chart", {
               className="bar-fill animating-bar"
               data-final-width={adjustedBarOneWidth}
               style={{
-                backgroundColor: barOneEnd > barTwoEnd ? "rgb(1, 170, 41)" : "rgb(240, 0, 0)",
+                backgroundColor: dynamicBarOneColor,
                 width: `${(barOneEnd - barOneStart) / 100}%`,
               }}
             />
