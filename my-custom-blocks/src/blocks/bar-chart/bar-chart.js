@@ -184,7 +184,7 @@ registerBlockType("rs/bar-chart", {
                         />
                       </PanelBody>
 
-                      <PanelBody title="Text Styling">
+                      <PanelBody title="Title Text Styling">
                         <div className="text-styling-buttons">
                           <Button
                             onClick={() => setAttributes({ isBold: !isBold })}
@@ -249,9 +249,6 @@ registerBlockType("rs/bar-chart", {
                   width: `${adjustedBarOneWidth}%`,
                 }}
               />
-              <div className="bar-value">
-                {barOneEnd} {suffix}
-              </div>
             </div>
 
             <div className="bar" key={`bar-two-${barTwoEnd}`} style={{ marginBottom: "20px" }}>
@@ -265,10 +262,17 @@ registerBlockType("rs/bar-chart", {
                   width: `${adjustedBarTwoWidth}%`,
                 }}
               />
-              <div className="bar-value">
-                {barTwoEnd} {suffix}
-              </div>
             </div>
+            
+            <div className="value-indicators">
+                <span>
+                  {Math.min(parseFloat(barTwoStart), parseFloat(barOneStart))}
+                </span>
+                <span>
+                  {Math.max(parseFloat(barTwoEnd), parseFloat(barOneEnd))}
+                  {suffix}
+                </span>
+              </div>
           </div>
         </div>
       </>
