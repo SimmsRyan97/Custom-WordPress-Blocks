@@ -20,19 +20,19 @@ registerBlockType('rs/generic-slider', {
     edit: ({ attributes, setAttributes }) => {
         const { slides } = attributes;
 
-        // Add a new slide with a unique id
+        // Function to add a new slide with a unique id
         const addSlide = () => {
             const newSlide = { id: uuidv4(), text: '', image: '' };
             setAttributes({ slides: [...slides, newSlide] });
         };
 
-        // Remove a slide based on its unique id
+        // Function to remove a slide based on its unique id
         const removeSlide = (id) => {
             const updatedSlides = slides.filter(slide => slide.id !== id);
             setAttributes({ slides: updatedSlides });
         };
 
-        // Update a slide by id
+        // Function to update a slide by id
         const updateSlide = (id, key, value) => {
             const updatedSlides = slides.map(slide =>
                 slide.id === id ? { ...slide, [key]: value } : slide
@@ -52,7 +52,7 @@ registerBlockType('rs/generic-slider', {
                     </PanelBody>
                 </InspectorControls>
                 <div className="slider-preview">
-                    {slides.map((slide) => (
+                    {slides.map((slide, index) => (
                         <div key={slide.id} className="slider-item">
                             <MediaUpload
                                 onSelect={(media) => updateSlide(slide.id, 'image', media.url)}
@@ -69,11 +69,12 @@ registerBlockType('rs/generic-slider', {
                             />
                             <div className="text-container">
                                 <RichText
-                                    tagName="div"
+                                    tagName="p"
                                     placeholder="Slide Text"
                                     value={slide.text}
                                     onChange={(value) => updateSlide(slide.id, 'text', value)}
-                                    multiline="p"
+                                    keepPlaceholderOnFocus
+                                    allowedFormats={['core/bold', 'core/italic']}
                                 />
                             </div>
                             <Button isDestructive onClick={() => removeSlide(slide.id)}>
@@ -100,7 +101,7 @@ registerBlockType('rs/generic-slider', {
                                 </div>
                             )}
                             {slide.text && (
-                                <RichText.Content tagName="div" value={slide.text} />
+                                <RichText.Content tagName="p" value={slide.text} />
                             )}
                         </div>
                     ))}
