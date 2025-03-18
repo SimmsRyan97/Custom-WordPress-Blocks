@@ -1,8 +1,7 @@
-import { useEffect, useRef } from '@wordpress/element';
 import { registerBlockType } from '@wordpress/blocks';
 import { InspectorControls, RichText, MediaUpload } from '@wordpress/block-editor';
 import { Button, PanelBody, PanelRow } from '@wordpress/components';
-import { v4 as uuidv4 } from 'uuid'; // Ensure each slide has a unique ID
+import { v4 as uuidv4 } from 'uuid'; // Install uuid via npm if not installed: npm install uuid
 
 import './editor.scss';
 import './style.scss';
@@ -20,8 +19,9 @@ registerBlockType('rs/generic-slider', {
 
     edit: ({ attributes, setAttributes }) => {
         const { slides } = attributes;
-        const sliderRef = useRef(null); // Reference for scrolling to the last slide
+        const sliderRef = React.useRef();  // Add the ref for the slider container
 
+        // Function to add a new slide with a unique id
         const addSlide = () => {
             const newSlide = { id: uuidv4(), text: '', image: '' };
             setAttributes({ slides: [...slides, newSlide] });
@@ -29,18 +29,23 @@ registerBlockType('rs/generic-slider', {
             // Allow time for state update, then scroll to the new slide
             setTimeout(() => {
                 if (sliderRef.current) {
-                    sliderRef.current.lastElementChild.scrollIntoView({ behavior: 'smooth' });
+                    const lastSlide = sliderRef.current.lastElementChild;
+                    if (lastSlide) {
+                        lastSlide.scrollIntoView({ behavior: 'smooth' });
+                    }
                 }
             }, 100);
         };
 
+        // Function to remove a slide based on its unique id
         const removeSlide = (id) => {
-            const updatedSlides = slides.filter((slide) => slide.id !== id);
+            const updatedSlides = slides.filter(slide => slide.id !== id);
             setAttributes({ slides: updatedSlides });
         };
 
+        // Function to update a slide by id
         const updateSlide = (id, key, value) => {
-            const updatedSlides = slides.map((slide) =>
+            const updatedSlides = slides.map(slide =>
                 slide.id === id ? { ...slide, [key]: value } : slide
             );
             setAttributes({ slides: updatedSlides });
@@ -57,7 +62,7 @@ registerBlockType('rs/generic-slider', {
                         </PanelRow>
                     </PanelBody>
                 </InspectorControls>
-                <div className="slider-preview" ref={sliderRef}>
+                <div className="slider-preview" ref={sliderRef}>  {/* Attach the ref here */}
                     {slides.map((slide, index) => (
                         <div key={slide.id} className="slider-item">
                             <MediaUpload
@@ -66,22 +71,23 @@ registerBlockType('rs/generic-slider', {
                                 render={({ open }) => (
                                     <Button isSecondary onClick={open}>
                                         {slide.image ? (
-                                            <img src={slide.image} alt={`Slide ${index}`} />
+                                            <img src={slide.image} alt="Slide" />
                                         ) : (
                                             'Select Image'
                                         )}
                                     </Button>
                                 )}
                             />
-                            <RichText
-                                tagName="div"
-                                placeholder="Slide Text"
-                                value={slide.text}
-                                onChange={(value) => updateSlide(slide.id, 'text', value)}
-                                allowedFormats={['core/bold', 'core/italic']}
-                                multiline="p" // Ensures paragraphs instead of <br>
-                                keepPlaceholderOnFocus
-                            />
+                            <div className="text-container">
+                                <RichText
+                                    tagName="p"
+                                    placeholder="Slide Text"
+                                    value={slide.text}
+                                    onChange={(value) => updateSlide(slide.id, 'text', value)}
+                                    keepPlaceholderOnFocus
+                                    allowedFormats={['core/bold', 'core/italic']}
+                                />
+                            </div>
                             <Button isDestructive onClick={() => removeSlide(slide.id)}>
                                 Remove
                             </Button>
@@ -94,19 +100,19 @@ registerBlockType('rs/generic-slider', {
 
     save: ({ attributes }) => {
         const { slides } = attributes;
-    
+
         return (
             <div className="carousel">
                 <div className="entries">
-                    {slides.map((slide, index) => (
-                        <div key={slide.id} className="slider-entry" id={`slide${index + 1}`}>
+                    {slides.map((slide) => (
+                        <div key={slide.id} className="slider-entry">
                             {slide.image && (
                                 <div className="image-container">
-                                    <img src={slide.image} alt={`Slide ${index}`} />
+                                    <img src={slide.image} alt="Slide" />
                                 </div>
                             )}
                             {slide.text && (
-                                <RichText.Content tagName="div" value={slide.text} />
+                                <RichText.Content tagName="p" value={slide.text} />
                             )}
                         </div>
                     ))}
@@ -118,5 +124,5 @@ registerBlockType('rs/generic-slider', {
                 </div>
             </div>
         );
-    },    
+    },
 });
