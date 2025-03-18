@@ -69,12 +69,13 @@ registerBlockType('rs/generic-slider', {
                             />
                             <div className="text-container">
                                 <RichText
-                                    tagName="p"
+                                    tagName="div" // Wraps all paragraphs in a div
                                     placeholder="Slide Text"
                                     value={slide.text}
                                     onChange={(value) => updateSlide(slide.id, 'text', value)}
                                     keepPlaceholderOnFocus
                                     allowedFormats={['core/bold', 'core/italic']}
+                                    multiline="p" // Creates new <p> elements instead of <br>
                                 />
                             </div>
                             <Button isDestructive onClick={() => removeSlide(slide.id)}>
