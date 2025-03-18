@@ -1,6 +1,7 @@
 import { registerBlockType } from '@wordpress/blocks';
 import { InspectorControls, RichText, MediaUpload } from '@wordpress/block-editor';
 import { Button, PanelBody, PanelRow } from '@wordpress/components';
+import { v4 as uuidv4 } from 'uuid';
 
 import './editor.scss';
 import './style.scss';
@@ -19,19 +20,23 @@ registerBlockType('rs/generic-slider', {
     edit: ({ attributes, setAttributes }) => {
         const { slides } = attributes;
 
+        // Add a new slide with a unique id
         const addSlide = () => {
-            const newSlide = { text: '', image: '' };
+            const newSlide = { id: uuidv4(), text: '', image: '' };
             setAttributes({ slides: [...slides, newSlide] });
         };
 
-        const removeSlide = (index) => {
-            const updatedSlides = slides.filter((_, i) => i !== index);
+        // Remove a slide based on its unique id
+        const removeSlide = (id) => {
+            const updatedSlides = slides.filter(slide => slide.id !== id);
             setAttributes({ slides: updatedSlides });
         };
 
-        const updateSlide = (index, key, value) => {
-            const updatedSlides = [...slides];
-            updatedSlides[index][key] = value;
+        // Update a slide by id
+        const updateSlide = (id, key, value) => {
+            const updatedSlides = slides.map(slide =>
+                slide.id === id ? { ...slide, [key]: value } : slide
+            );
             setAttributes({ slides: updatedSlides });
         };
 
@@ -47,29 +52,31 @@ registerBlockType('rs/generic-slider', {
                     </PanelBody>
                 </InspectorControls>
                 <div className="slider-preview">
-                    {slides.map((slide, index) => (
-                        <div key={index} className="slider-item">
+                    {slides.map((slide) => (
+                        <div key={slide.id} className="slider-item">
                             <MediaUpload
-                                onSelect={(media) => updateSlide(index, 'image', media.url)}
+                                onSelect={(media) => updateSlide(slide.id, 'image', media.url)}
                                 allowedTypes={['image']}
                                 render={({ open }) => (
                                     <Button isSecondary onClick={open}>
                                         {slide.image ? (
-                                            <img src={slide.image} alt={`Slide ${index}`} />
+                                            <img src={slide.image} alt="Slide" />
                                         ) : (
                                             'Select Image'
                                         )}
                                     </Button>
                                 )}
                             />
-                            <RichText
-                                tagName="div" // Use div instead of p to allow multiple paragraphs
-                                placeholder="Slide Text"
-                                value={slide.text}
-                                onChange={(value) => updateSlide(index, 'text', value)}
-                                multiline="p"  // Allow paragraphs
-                            />
-                            <Button isDestructive onClick={() => removeSlide(index)}>
+                            <div className="text-container">
+                                <RichText
+                                    tagName="div"
+                                    placeholder="Slide Text"
+                                    value={slide.text}
+                                    onChange={(value) => updateSlide(slide.id, 'text', value)}
+                                    multiline="p"
+                                />
+                            </div>
+                            <Button isDestructive onClick={() => removeSlide(slide.id)}>
                                 Remove
                             </Button>
                         </div>
@@ -81,15 +88,15 @@ registerBlockType('rs/generic-slider', {
 
     save: ({ attributes }) => {
         const { slides } = attributes;
-    
+
         return (
             <div className="carousel">
                 <div className="entries">
-                    {slides.map((slide, index) => (
-                        <div key={index} className="slider-entry" id={`slide${index + 1}`}>
+                    {slides.map((slide) => (
+                        <div key={slide.id} className="slider-entry">
                             {slide.image && (
                                 <div className="image-container">
-                                    <img src={slide.image} alt={`Slide ${index}`} />
+                                    <img src={slide.image} alt="Slide" />
                                 </div>
                             )}
                             {slide.text && (
@@ -105,5 +112,5 @@ registerBlockType('rs/generic-slider', {
                 </div>
             </div>
         );
-    },    
+    },
 });
