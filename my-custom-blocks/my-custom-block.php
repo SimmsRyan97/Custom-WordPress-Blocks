@@ -33,7 +33,7 @@ function rs_blocks_register_block() {
     );
 
     // List of blocks to register
-    $blocks = array( 'bar-chart', 'new-block', 'slider' );
+    $blocks = array( 'bar-chart', 'slider', 'timeline-slider' );
 
     // Dynamically register blocks
     foreach ( $blocks as $block ) {
@@ -82,6 +82,16 @@ function rs_enqueue_frontend_scripts() {
             plugin_dir_url(__FILE__) . 'slider-navigation.js',
             array(),
             filemtime(plugin_dir_path(__FILE__) . 'slider-navigation.js'),
+            true
+        );
+    }
+
+    if (has_block('rs/generic-slider', $content)) {
+        wp_enqueue_script(
+            'timeline-slider-nav',
+            plugin_dir_url(__FILE__) . 'timeline-slider-functions.js',
+            array(),
+            filemtime(plugin_dir_path(__FILE__) . 'timeline-slider-functions.js'),
             true
         );
     }

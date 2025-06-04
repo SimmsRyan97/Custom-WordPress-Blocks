@@ -1,0 +1,53 @@
+/* File: src/blocks/timeline-slider/style.scss */
+
+.timeline-slider {
+  > .slide-wrap {
+    border: 1px solid #ccc;
+    margin-bottom: 2rem;
+  }
+
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid #ccc;
+    background: #eee;
+  }
+
+  .tabs button {
+    flex-grow: 1;
+    padding: 0.5rem 1rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  .tabs button.active {
+    border-bottom-color: #0073aa;
+    background: white;
+  }
+
+  .slide-content {
+    display: none;
+    padding: 1rem;
+  }
+
+  .slide-content.active {
+    display: block;
+  }
+
+  .nav-arrows {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.5rem 1rem;
+  }
+
+  .nav-arrows button {
+    background: #0073aa;
+    color: white;
+    border: none;
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+    font-size: 1.2rem;
+  }
+}

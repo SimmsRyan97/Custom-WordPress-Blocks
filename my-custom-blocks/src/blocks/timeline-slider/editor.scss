@@ -1,0 +1,15 @@
+/* File: src/blocks/timeline-slider/editor.scss */
+
+.timeline-slider-editor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.timeline-slider-editor > .wp-block-group {
+  min-width: 300px;
+  max-width: 300px;
+  border: 1px solid #ddd;
+  padding: 1rem;
+  background: #fafafa;
+}
