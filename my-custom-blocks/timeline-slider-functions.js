@@ -1,112 +1,121 @@
-// File: timeline-slider-frontend.js
-
 document.addEventListener('DOMContentLoaded', () => {
-  const sliderRoot = document.querySelector('.wp-block-my-custom-blocks-timeline-slider');
+  const sliderRoot = document.querySelector('.timeline-slider[data-slider="true"]');
   if (!sliderRoot) return;
 
-  // Group every 3 child slides inside .slide-wrap
-  const slides = Array.from(sliderRoot.children);
+  // Get all slides inside slider
+  const slides = Array.from(sliderRoot.querySelectorAll('.slide'));
 
   if (slides.length === 0) return;
 
-  // Remove existing children so we can rebuild grouped structure
-  while (sliderRoot.firstChild) {
-    sliderRoot.removeChild(sliderRoot.firstChild);
-  }
+  // Build tabs container and slides container
+  const tabsContainer = document.createElement('div');
+  tabsContainer.className = 'tabs';
 
-  // Helper function to create tab buttons and content containers
-  function createSlideWrap(groupSlides, groupIndex) {
-    const slideWrap = document.createElement('div');
-    slideWrap.className = 'slide-wrap';
+  const slidesContainer = document.createElement('div');
+  slidesContainer.className = 'slides-container';
 
-    // Create tabs container
-    const tabs = document.createElement('div');
-    tabs.className = 'tabs';
-
-    groupSlides.forEach((slide, i) => {
-      // Create tab button
-      const heading = slide.querySelector('h2, h3, h4, h5, h6') || slide.querySelector('h1') || slide.querySelector('h2') || { textContent: `Slide ${i + 1}` };
-      const tabBtn = document.createElement('button');
-      tabBtn.type = 'button';
-      tabBtn.textContent = heading.textContent || `Slide ${i + 1}`;
-      if (i === 0) tabBtn.classList.add('active');
-      tabs.appendChild(tabBtn);
-
-      // Wrap slide content
-      slide.classList.add('slide-content');
-      if (i === 0) slide.classList.add('active');
-      slideWrap.appendChild(slide);
-
-      // Tab click event
-      tabBtn.addEventListener('click', () => {
-        // Set active tab button
-        tabs.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
-        tabBtn.classList.add('active');
-
-        // Show corresponding slide content
-        groupSlides.forEach(s => s.classList.remove('active'));
-        slide.classList.add('active');
-      });
-    });
-
-    // Insert tabs before slides content
-    slideWrap.insertBefore(tabs, slideWrap.firstChild);
-
-    return slideWrap;
-  }
-
-  // Group slides into arrays of 3
-  const groupedSlides = [];
-  for (let i = 0; i < slides.length; i += 3) {
-    groupedSlides.push(slides.slice(i, i + 3));
-  }
-
-  // Append all groups wrapped in .slide-wrap
-  groupedSlides.forEach((group, idx) => {
-    sliderRoot.appendChild(createSlideWrap(group, idx));
+  // Move all slides into slides container
+  slides.forEach((slide) => {
+    slidesContainer.appendChild(slide);
   });
 
-  // Optional: Add navigation arrows to flick through groups of slide-wraps
-  if (groupedSlides.length > 1) {
-    let currentIndex = 0;
+  // Append tabs container and slides container to slider root
+  sliderRoot.appendChild(tabsContainer);
+  sliderRoot.appendChild(slidesContainer);
 
-    const navArrows = document.createElement('div');
-    navArrows.className = 'nav-arrows';
+  // Create tabs buttons with slide titles and IDs
+  slides.forEach((slide, i) => {
+    const slideId = slide.getAttribute('data-slide-id');
+    const slideTitle = slide.getAttribute('data-title') || `Slide ${i + 1}`;
 
-    const prevBtn = document.createElement('button');
-    prevBtn.type = 'button';
-    prevBtn.textContent = '←';
-    prevBtn.disabled = true;
+    const tabBtn = document.createElement('button');
+    tabBtn.type = 'button';
+    tabBtn.className = 'tab-button';
+    tabBtn.textContent = slideTitle;
+    tabBtn.dataset.target = slideId;
+    if (i === 0) tabBtn.classList.add('active');
 
-    const nextBtn = document.createElement('button');
-    nextBtn.type = 'button';
-    nextBtn.textContent = '→';
+    tabsContainer.appendChild(tabBtn);
 
-    navArrows.appendChild(prevBtn);
-    navArrows.appendChild(nextBtn);
-
-    sliderRoot.parentElement.insertBefore(navArrows, sliderRoot.nextSibling);
-
-    function showGroup(index) {
-      currentIndex = index;
-      const allSlideWraps = sliderRoot.querySelectorAll('.slide-wrap');
-      allSlideWraps.forEach((wrap, i) => {
-        wrap.style.display = i === currentIndex ? 'block' : 'none';
-      });
-
-      prevBtn.disabled = currentIndex === 0;
-      nextBtn.disabled = currentIndex === allSlideWraps.length - 1;
+    // Hide all slides except first
+    if (i === 0) {
+      slide.classList.add('active');
+    } else {
+      slide.classList.remove('active');
+      slide.style.display = 'none';
     }
 
-    prevBtn.addEventListener('click', () => {
-      if (currentIndex > 0) showGroup(currentIndex - 1);
+    // On tab click show corresponding slide
+    tabBtn.addEventListener('click', () => {
+      // Set active tab
+      tabsContainer.querySelectorAll('.tab-button').forEach((btn) => btn.classList.remove('active'));
+      tabBtn.classList.add('active');
+
+      // Show matching slide
+      slides.forEach((s) => {
+        if (s.getAttribute('data-slide-id') === slideId) {
+          s.style.display = '';
+          s.classList.add('active');
+        } else {
+          s.style.display = 'none';
+          s.classList.remove('active');
+        }
+      });
+    });
+  });
+
+  // Show 3 tabs max and add arrow navigation if needed
+  const maxVisibleTabs = 3;
+  const totalTabs = slides.length;
+
+  if (totalTabs > maxVisibleTabs) {
+    let startIndex = 0;
+
+    // Wrap tabs container and add nav arrows
+    const tabsWrapper = document.createElement('div');
+    tabsWrapper.className = 'tabs-wrapper';
+    sliderRoot.insertBefore(tabsWrapper, tabsContainer);
+    tabsWrapper.appendChild(tabsContainer);
+
+    const prevArrow = document.createElement('button');
+    prevArrow.type = 'button';
+    prevArrow.textContent = '←';
+    prevArrow.className = 'tabs-nav prev';
+    prevArrow.disabled = true;
+
+    const nextArrow = document.createElement('button');
+    nextArrow.type = 'button';
+    nextArrow.textContent = '→';
+    nextArrow.className = 'tabs-nav next';
+
+    tabsWrapper.insertBefore(prevArrow, tabsContainer);
+    tabsWrapper.appendChild(nextArrow);
+
+    // Function to update visible tabs
+    function updateTabs() {
+      const tabs = Array.from(tabsContainer.children);
+      tabs.forEach((tab, i) => {
+        tab.style.display = i >= startIndex && i < startIndex + maxVisibleTabs ? '' : 'none';
+      });
+
+      prevArrow.disabled = startIndex === 0;
+      nextArrow.disabled = startIndex + maxVisibleTabs >= totalTabs;
+    }
+
+    prevArrow.addEventListener('click', () => {
+      if (startIndex > 0) {
+        startIndex--;
+        updateTabs();
+      }
     });
 
-    nextBtn.addEventListener('click', () => {
-      if (currentIndex < groupedSlides.length - 1) showGroup(currentIndex + 1);
+    nextArrow.addEventListener('click', () => {
+      if (startIndex + maxVisibleTabs < totalTabs) {
+        startIndex++;
+        updateTabs();
+      }
     });
 
-    // Initially show only first group
-    showGroup(0);
+    updateTabs();
   }
 });

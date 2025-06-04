@@ -1,15 +1,38 @@
-/* File: src/blocks/timeline-slider/editor.scss */
-
 .timeline-slider-editor {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-}
+  padding: 1rem 0;
 
-.timeline-slider-editor > .wp-block-group {
-  min-width: 300px;
-  max-width: 300px;
-  border: 1px solid #ddd;
-  padding: 1rem;
-  background: #fafafa;
+  // Visually group the slides more clearly
+  & > .wp-block-my-custom-blocks-slide {
+    position: relative;
+    min-width: 300px;
+    max-width: 300px;
+    flex: 1 0 auto;
+    border: 1px solid #dcdcdc;
+    background: #f9f9f9;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+    transition: border-color 0.3s;
+
+    &:hover {
+      border-color: #007cba;
+    }
+  }
+
+  // Optional: visual marker for empty slides
+  & > .wp-block-my-custom-blocks-slide:empty::before {
+    content: 'Empty slide';
+    display: block;
+    font-style: italic;
+    color: #999;
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+
+  & *:not(button) {
+    width: 100%;
+  }
 }
