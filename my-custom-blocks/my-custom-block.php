@@ -2,7 +2,7 @@
 /*
 Plugin Name: Ryan Simms Custom Blocks
 Description: Custom Gutenberg blocks.
-Version: 1.0.7
+Version: 1.0.9
 Author: Ryan Simms
 */
 

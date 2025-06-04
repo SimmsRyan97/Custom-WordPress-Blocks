@@ -1,121 +1,124 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const sliderRoot = document.querySelector('.timeline-slider[data-slider="true"]');
-  if (!sliderRoot) return;
+	const sliderRoot = document.querySelector('.timeline-slider[data-slider="true"]');
+	if (!sliderRoot) return;
 
-  // Get all slides inside slider
-  const slides = Array.from(sliderRoot.querySelectorAll('.slide'));
+	const slides = Array.from(sliderRoot.querySelectorAll('.slide'));
+	if (slides.length === 0) return;
 
-  if (slides.length === 0) return;
+	const SLIDES_PER_GROUP = 3;
+	const totalGroups = Math.ceil(slides.length / SLIDES_PER_GROUP);
 
-  // Build tabs container and slides container
-  const tabsContainer = document.createElement('div');
-  tabsContainer.className = 'tabs';
+	// Remove slides before rebuilding DOM
+	slides.forEach(slide => slide.remove());
 
-  const slidesContainer = document.createElement('div');
-  slidesContainer.className = 'slides-container';
+	const groups = [];
 
-  // Move all slides into slides container
-  slides.forEach((slide) => {
-    slidesContainer.appendChild(slide);
-  });
+	for (let groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
+		const groupSlides = slides.slice(
+			groupIndex * SLIDES_PER_GROUP,
+			(groupIndex + 1) * SLIDES_PER_GROUP
+		);
 
-  // Append tabs container and slides container to slider root
-  sliderRoot.appendChild(tabsContainer);
-  sliderRoot.appendChild(slidesContainer);
+		const slideWrap = document.createElement('div');
+		slideWrap.className = 'slide-wrap';
 
-  // Create tabs buttons with slide titles and IDs
-  slides.forEach((slide, i) => {
-    const slideId = slide.getAttribute('data-slide-id');
-    const slideTitle = slide.getAttribute('data-title') || `Slide ${i + 1}`;
+		const tabsContainer = document.createElement('div');
+		tabsContainer.className = 'tabs';
 
-    const tabBtn = document.createElement('button');
-    tabBtn.type = 'button';
-    tabBtn.className = 'tab-button';
-    tabBtn.textContent = slideTitle;
-    tabBtn.dataset.target = slideId;
-    if (i === 0) tabBtn.classList.add('active');
+		const contentContainer = document.createElement('div');
+		contentContainer.className = 'content';
 
-    tabsContainer.appendChild(tabBtn);
+		groupSlides.forEach((slide, index) => {
+			const slideId = slide.getAttribute('data-slide-id') || `slide-${groupIndex}-${index}`;
+			const slideTitle = slide.getAttribute('data-title') || `Slide ${groupIndex * SLIDES_PER_GROUP + index + 1}`;
 
-    // Hide all slides except first
-    if (i === 0) {
-      slide.classList.add('active');
-    } else {
-      slide.classList.remove('active');
-      slide.style.display = 'none';
-    }
+			slide.setAttribute('data-slide-id', slideId);
+			slide.setAttribute('data-title', slideTitle);
 
-    // On tab click show corresponding slide
-    tabBtn.addEventListener('click', () => {
-      // Set active tab
-      tabsContainer.querySelectorAll('.tab-button').forEach((btn) => btn.classList.remove('active'));
-      tabBtn.classList.add('active');
+			const tabBtn = document.createElement('button');
+			tabBtn.type = 'button';
+			tabBtn.className = 'tab-button';
+			tabBtn.textContent = slideTitle;
+			tabBtn.dataset.target = slideId;
 
-      // Show matching slide
-      slides.forEach((s) => {
-        if (s.getAttribute('data-slide-id') === slideId) {
-          s.style.display = '';
-          s.classList.add('active');
-        } else {
-          s.style.display = 'none';
-          s.classList.remove('active');
-        }
-      });
-    });
-  });
+			if (index === 0) {
+				tabBtn.classList.add('active');
+				slide.classList.add('active');
+				slide.style.display = '';
+			} else {
+				slide.classList.remove('active');
+				slide.style.display = 'none';
+			}
 
-  // Show 3 tabs max and add arrow navigation if needed
-  const maxVisibleTabs = 3;
-  const totalTabs = slides.length;
+			tabBtn.addEventListener('click', () => {
+				tabsContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+				tabBtn.classList.add('active');
 
-  if (totalTabs > maxVisibleTabs) {
-    let startIndex = 0;
+				groupSlides.forEach(s => {
+					if (s.getAttribute('data-slide-id') === slideId) {
+						s.classList.add('active');
+						s.style.display = '';
+					} else {
+						s.classList.remove('active');
+						s.style.display = 'none';
+					}
+				});
+			});
 
-    // Wrap tabs container and add nav arrows
-    const tabsWrapper = document.createElement('div');
-    tabsWrapper.className = 'tabs-wrapper';
-    sliderRoot.insertBefore(tabsWrapper, tabsContainer);
-    tabsWrapper.appendChild(tabsContainer);
+			tabsContainer.appendChild(tabBtn);
+			contentContainer.appendChild(slide);
+		});
 
-    const prevArrow = document.createElement('button');
-    prevArrow.type = 'button';
-    prevArrow.textContent = '←';
-    prevArrow.className = 'tabs-nav prev';
-    prevArrow.disabled = true;
+		slideWrap.appendChild(tabsContainer);
+		slideWrap.appendChild(contentContainer);
+		groups.push(slideWrap);
+	}
 
-    const nextArrow = document.createElement('button');
-    nextArrow.type = 'button';
-    nextArrow.textContent = '→';
-    nextArrow.className = 'tabs-nav next';
+	// Navigation arrows
+	const navWrapper = document.createElement('div');
+	navWrapper.className = 'nav-arrows';
 
-    tabsWrapper.insertBefore(prevArrow, tabsContainer);
-    tabsWrapper.appendChild(nextArrow);
+	const prevBtn = document.createElement('button');
+	prevBtn.className = 'prev';
+	prevBtn.textContent = '←';
+	prevBtn.disabled = true;
 
-    // Function to update visible tabs
-    function updateTabs() {
-      const tabs = Array.from(tabsContainer.children);
-      tabs.forEach((tab, i) => {
-        tab.style.display = i >= startIndex && i < startIndex + maxVisibleTabs ? '' : 'none';
-      });
+	const nextBtn = document.createElement('button');
+	nextBtn.className = 'next';
+	nextBtn.textContent = '→';
 
-      prevArrow.disabled = startIndex === 0;
-      nextArrow.disabled = startIndex + maxVisibleTabs >= totalTabs;
-    }
+	navWrapper.appendChild(prevBtn);
+	navWrapper.appendChild(nextBtn);
+	sliderRoot.appendChild(navWrapper);
 
-    prevArrow.addEventListener('click', () => {
-      if (startIndex > 0) {
-        startIndex--;
-        updateTabs();
-      }
-    });
+	let currentGroup = 0;
 
-    nextArrow.addEventListener('click', () => {
-      if (startIndex + maxVisibleTabs < totalTabs) {
-        startIndex++;
-        updateTabs();
-      }
-    });
+	function showGroup(index) {
+		// Clear previous groups
+		sliderRoot.querySelectorAll('.slide-wrap').forEach(sw => sw.remove());
 
-    updateTabs();
-  }
+		// Show current
+		sliderRoot.insertBefore(groups[index], navWrapper);
+
+		// Button state
+		prevBtn.disabled = index === 0;
+		nextBtn.disabled = index === groups.length - 1;
+	}
+
+	prevBtn.addEventListener('click', () => {
+		if (currentGroup > 0) {
+			currentGroup--;
+			showGroup(currentGroup);
+		}
+	});
+
+	nextBtn.addEventListener('click', () => {
+		if (currentGroup < groups.length - 1) {
+			currentGroup++;
+			showGroup(currentGroup);
+		}
+	});
+
+	// Init first group
+	showGroup(0);
 });
