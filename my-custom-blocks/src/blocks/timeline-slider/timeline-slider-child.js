@@ -9,11 +9,11 @@ import { PanelBody, TextControl } from '@wordpress/components';
 import { useEffect, useState } from '@wordpress/element';
 import './editor.scss';
 
-registerBlockType('rs/slide', {
+registerBlockType('rs/timeline-slider-child', {
     title: 'Time Slide',
     icon: 'slides',
     category: 'layout',
-    parent: ['my-custom-blocks/timeline-slider'], // restrict to only inside timeline-slider
+    parent: ['rs/timeline-slider'], // restrict to only inside timeline-slider
     attributes: {
         title: {
             type: 'string',
