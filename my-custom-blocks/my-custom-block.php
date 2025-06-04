@@ -86,7 +86,7 @@ function rs_enqueue_frontend_scripts() {
         );
     }
 
-    if (has_block('rs/generic-slider', $content)) {
+    if (has_block('rs/timeline-slider', $content)) {
         wp_enqueue_script(
             'timeline-slider-nav',
             plugin_dir_url(__FILE__) . 'timeline-slider-functions.js',
