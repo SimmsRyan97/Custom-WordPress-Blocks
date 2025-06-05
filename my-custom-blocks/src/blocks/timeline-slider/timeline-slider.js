@@ -1,5 +1,5 @@
 import { __ } from "@wordpress/i18n";
-import { registerBlockType , createBlock } from '@wordpress/blocks';
+import { registerBlockType, createBlock } from '@wordpress/blocks';
 import {
     useBlockProps,
     InnerBlocks,
@@ -14,68 +14,77 @@ import {
     ToolbarGroup,
     ToolbarButton,
     DropdownMenu,
+    ColorIndicator,
 } from '@wordpress/components';
 import {
     plus,
     angleDown,
 } from '@wordpress/icons';
 import { dispatch } from '@wordpress/data';
+import { useEffect } from '@wordpress/element';
 
 import './editor.scss';
 import './style.scss';
 
+// Define your prefix here
+const VAR_PREFIX = '--rs-slider-';
+
 const buildStyleVars = (attributes) => ({
-'--parent-background-color': attributes.parentBackgroundColor || undefined,
-'--tab-background': attributes.tabBackgroundColor || undefined,
-'--tab-background-hover': attributes.tabBackgroundHoverColor || undefined,
-'--arrow-background': attributes.arrowBackgroundColor || undefined,
-'--arrow-background-hover': attributes.arrowBackgroundHoverColor || undefined,
-'--arrow-text': attributes.arrowTextColor || undefined,
-'--arrow-text-hover': attributes.arrowTextHoverColor || undefined,
+    [`${VAR_PREFIX}parent-background-color`]: attributes.parentBackgroundColor || undefined,
+    [`${VAR_PREFIX}tab-background`]: attributes.tabBackgroundColor || undefined,
+    [`${VAR_PREFIX}tab-background-hover`]: attributes.tabBackgroundHoverColor || undefined,
+    [`${VAR_PREFIX}arrow-background`]: attributes.arrowBackgroundColor || undefined,
+    [`${VAR_PREFIX}arrow-background-hover`]: attributes.arrowBackgroundHoverColor || undefined,
+    [`${VAR_PREFIX}arrow-text`]: attributes.arrowTextColor || undefined,
+    [`${VAR_PREFIX}arrow-text-hover`]: attributes.arrowTextHoverColor || undefined,
 });
 
 const ALLOWED_BLOCKS = ['rs/timeline-slider-child'];
+
+const ColorPickerCircle = ({ value, onChange, label }) => (
+    <div>
+        <label style={{ display: 'block', marginBottom: '0.5em', fontSize: '0.85rem' }}>{label}</label>
+        <DropdownMenu
+            icon={null}
+            label={label}
+            toggleProps={{
+                style: {
+                    backgroundColor: value || '#000',
+                    borderRadius: '50%',
+                    width: '30px',
+                    height: '30px',
+                    border: '1px solid #ccc',
+                    cursor: 'pointer',
+                },
+                'aria-label': `${label} Colour Picker`,
+            }}
+            popoverProps={{ placement: 'bottom-start' }}
+        >
+            {() => (
+                <ColorPalette
+                    value={value}
+                    onChange={onChange}
+                    disableCustomColors={false}
+                />
+            )}
+        </DropdownMenu>
+    </div>
+);
 
 registerBlockType('rs/timeline-slider', {
     title: 'Timeline Slider',
     icon: 'schedule',
     category: 'layout',
     attributes: {
-        align: {
-            type: 'string',
-        },
-        innerContentWidth: {
-            type: 'boolean',
-            default: true,
-        },
-        parentBackgroundColor: {
-            type: 'string',
-            default: '',
-        },
-        tabBackgroundColor: {
-            type: 'string',
-            default: '#eeeeee',
-        },
-        tabBackgroundHoverColor: {
-            type: 'string',
-            default: '#dddddd',
-        },
-        arrowBackgroundColor: {
-            type: 'string',
-            default: '#000000',
-        },
-        arrowBackgroundHoverColor: {
-            type: 'string',
-            default: '#333333',
-        },
-        arrowTextColor: {
-            type: 'string',
-            default: '#ffffff',
-        },
-        arrowTextHoverColor: {
-            type: 'string',
-            default: '#ffffff',
-        },
+        align: { type: 'string' },
+        innerContentWidth: { type: 'boolean', default: false },
+        parentBackgroundColor: { type: 'string', default: '' },
+        tabBackgroundColor: { type: 'string', default: '' },
+        tabBackgroundHoverColor: { type: 'string', default: '' },
+        arrowBackgroundColor: { type: 'string', default: '' },
+        arrowBackgroundHoverColor: { type: 'string', default: '' },
+        arrowTextColor: { type: 'string', default: '' },
+        arrowTextHoverColor: { type: 'string', default: '' },
     },
     supports: {
         align: ['wide', 'full', 'center'],
@@ -90,55 +99,102 @@ registerBlockType('rs/timeline-slider', {
     edit({ attributes, setAttributes, clientId }) {
         const { innerContentWidth } = attributes;
 
+        useEffect(() => {
+            const styleId = 'rs-timeline-slider-root-vars';
+            let styleTag = document.getElementById(styleId);
+
+            const cssVars = Object.entries(buildStyleVars(attributes))
+                .filter(([, value]) => value !== undefined)
+                .map(([key, value]) => `${key}: ${value};`)
+                .join('\n');
+
+            const css = `.timeline-slider-editor {\n${cssVars}\n}`;
+
+            if (!styleTag) {
+                styleTag = document.createElement('style');
+                styleTag.id = styleId;
+                document.head.appendChild(styleTag);
+            }
+
+            styleTag.textContent = css;
+
+            return () => {
+                styleTag?.remove();
+            };
+        }, [attributes]);
+
         const blockProps = useBlockProps({
-            className: `timeline-slider-editor ${colourClasses}`,
+            className: 'timeline-slider-editor',
             'data-slider': 'true',
-            style: buildStyleVars(attributes),
         });
 
         return (
             <>
                 <InspectorControls>
                     <PanelBody title={__('Styles')}>
-                        {[
-                            {
-                                label: __('Block Background'),
-                                attribute: 'parentBackgroundColor',
-                            },
-                            {
-                                label: __('Arrow Background'),
-                                attribute: 'arrowBackgroundColor',
-                            },
-                            {
-                                label: __('Arrow Hover Background'),
-                                attribute: 'arrowBackgroundHoverColor',
-                            },
-                            {
-                                label: __('Arrow Text Colour'),
-                                attribute: 'arrowTextColor',
-                            },
-                            {
-                                label: __('Arrow Hover Text Colour'),
-                                attribute: 'arrowTextHoverColor',
-                            },
-                            {
-                                label: __('Tab Background Colour'),
-                                attribute: 'tabBackgroundColor',
-                            },
-                            {
-                                label: __('Tab Hover Background Colour'),
-                                attribute: 'tabBackgroundHoverColor',
-                            },
-                        ].map(({ label, attribute }) => (
-                            <div key={attribute}>
-                                <p>{label}</p>
-                                <ColorPalette
-                                    value={attributes[attribute]}
-                                    onChange={(value) => setAttributes({ [attribute]: value })}
-                                    disableCustomColors={false}
+                        <div style={{ marginBottom: '1em' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5em' }}>
+                                {__('Block Background')}
+                            </label>
+                            <ColorPickerCircle
+                                value={attributes.parentBackgroundColor}
+                                onChange={(value) => setAttributes({ parentBackgroundColor: value })}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: '1em' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5em' }}>
+                                {__('Tab Background')}
+                            </label>
+                            <div style={{ display: 'flex', gap: '20px' }}>
+                                <ColorPickerCircle
+                                    label={__('Normal')}
+                                    value={attributes.tabBackgroundColor}
+                                    onChange={(value) => setAttributes({ tabBackgroundColor: value })}
+                                />
+                                <ColorPickerCircle
+                                    label={__('Hover')}
+                                    value={attributes.tabBackgroundHoverColor}
+                                    onChange={(value) => setAttributes({ tabBackgroundHoverColor: value })}
                                 />
                             </div>
-                        ))}
+                        </div>
+
+                        <div style={{ marginBottom: '1em' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5em' }}>
+                                {__('Arrow Background')}
+                            </label>
+                            <div style={{ display: 'flex', gap: '20px' }}>
+                                <ColorPickerCircle
+                                    label={__('Normal')}
+                                    value={attributes.arrowBackgroundColor}
+                                    onChange={(value) => setAttributes({ arrowBackgroundColor: value })}
+                                />
+                                <ColorPickerCircle
+                                    label={__('Hover')}
+                                    value={attributes.arrowBackgroundHoverColor}
+                                    onChange={(value) => setAttributes({ arrowBackgroundHoverColor: value })}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style={{ display: 'block', marginBottom: '0.5em' }}>
+                                {__('Arrow Text')}
+                            </label>
+                            <div style={{ display: 'flex', gap: '20px' }}>
+                                <ColorPickerCircle
+                                    label={__('Normal')}
+                                    value={attributes.arrowTextColor}
+                                    onChange={(value) => setAttributes({ arrowTextColor: value })}
+                                />
+                                <ColorPickerCircle
+                                    label={__('Hover')}
+                                    value={attributes.arrowTextHoverColor}
+                                    onChange={(value) => setAttributes({ arrowTextHoverColor: value })}
+                                />
+                            </div>
+                        </div>
                     </PanelBody>
                 </InspectorControls>
 
@@ -183,7 +239,7 @@ registerBlockType('rs/timeline-slider', {
                 </BlockControls>
 
                 <div {...blockProps}>
-                    <div className={'wp-block-group__inner-container'}>
+                    <div className="wp-block-group__inner-container">
                         <InnerBlocks
                             allowedBlocks={ALLOWED_BLOCKS}
                             template={[['rs/timeline-slider-child']]}
@@ -199,9 +255,8 @@ registerBlockType('rs/timeline-slider', {
         const { innerContentWidth } = attributes;
 
         const blockProps = useBlockProps.save({
-            className: `timeline-slider ${colourClasses}`,
+            className: 'timeline-slider',
             'data-slider': 'true',
-            style: buildStyleVars(attributes),
         });
 
         return (

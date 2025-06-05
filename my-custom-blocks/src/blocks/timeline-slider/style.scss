@@ -1,6 +1,6 @@
 .timeline-slider {
   width: 100%;
-  background: var(--parent-background-color, transparent);
+  background: var(--rs-slider-parent-background-color, transparent);
   margin: 0 0 1rem 0;
   padding: 1rem 0;
 
@@ -23,26 +23,27 @@
     overflow: hidden;
     opacity: 0;
     transition: opacity 0.3s ease;
-    &.fade-in {
+    &.active {
       opacity: 1;
     }
   }
 
   .tabs {
     display: flex;
+    gap: 0.25rem;
   }
 
   .tabs button {
     flex-grow: 1;
     padding: 0.5rem 1rem;
-    background-color: var(--tab-background);
+    background-color: var(--rs-slider-tab-background);
     cursor: pointer;
     font-weight: 600;
     transition: background-color 0.3s ease;
     max-width: 33.33%;
 
     &:hover {
-      background-color: var(--tab-background-hover);
+      background-color: var(--rs-slider-tab-background-hover);
     }
   }
 
@@ -79,8 +80,8 @@
   }
 
   .nav-arrows button {
-    background-color: var(--arrow-background);
-    color: var(--arrow-text);
+    background-color: var(--rs-slider-arrow-background);
+    color: var(--rs-slider-arrow-text);
     border: none;
     padding: 0.5rem 1rem;
     font-size: 1rem;
@@ -94,8 +95,8 @@
     }
 
     &:hover:not(:disabled) {
-      background-color: var(--arrow-background-hover);
-      color: var(--arrow-text-hover);
+      background-color: var(----rs-slider-arrow-background-hover);
+      color: var(--rs-slider-arrow-text-hover);
     }
   }
 }

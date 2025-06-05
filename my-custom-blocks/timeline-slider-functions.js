@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			sliderRoot.insertBefore(currentWrap, navWrapper);
 
 			// Trigger fade-in
-			requestAnimationFrame(() => {
+			queueMicrotask(() => {
 				currentWrap.classList.add('active');
 			});
 
