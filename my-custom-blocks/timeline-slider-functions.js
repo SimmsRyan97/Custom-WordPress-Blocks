@@ -28,8 +28,19 @@ document.addEventListener('DOMContentLoaded', () => {
 		const contentContainer = document.createElement('div');
 		contentContainer.className = 'content';
 
+		const usedSlideIds = new Set();
+
 		groupSlides.forEach((slide, index) => {
-			const slideId = slide.getAttribute('data-slide-id') || `slide-${groupIndex}-${index}`;
+			// Ensure unique slideId per group
+			let baseId = slide.getAttribute('data-slide-id') || `slide-${groupIndex}-${index}`;
+			let slideId = baseId;
+			let counter = 1;
+			while (usedSlideIds.has(slideId)) {
+				slideId = `${baseId}-${counter}`;
+				counter++;
+			}
+			usedSlideIds.add(slideId);
+
 			const slideTitle = slide.getAttribute('data-title') || `Slide ${groupIndex * SLIDES_PER_GROUP + index + 1}`;
 
 			slide.setAttribute('data-slide-id', slideId);
@@ -47,7 +58,6 @@ document.addEventListener('DOMContentLoaded', () => {
 				slide.style.display = '';
 			} else {
 				slide.classList.remove('active');
-				slide.style.display = 'none';
 			}
 
 			tabBtn.addEventListener('click', () => {
@@ -55,8 +65,11 @@ document.addEventListener('DOMContentLoaded', () => {
 				tabBtn.classList.add('active');
 
 				groupSlides.forEach(s => {
-					s.classList.toggle('active', s.getAttribute('data-slide-id') === slideId);
-					s.style.display = s.getAttribute('data-slide-id') === slideId ? '' : 'none';
+					if (s.getAttribute('data-slide-id') === slideId) {
+						s.classList.add('active');
+					} else {
+						s.classList.remove('active');
+					}
 				});
 			});
 
@@ -90,8 +103,20 @@ document.addEventListener('DOMContentLoaded', () => {
 		let currentGroup = 0;
 
 		function showGroup(index) {
+			const currentWrap = groups[index];
+
+			// Remove all existing wraps
 			sliderRoot.querySelectorAll('.slide-wrap').forEach(sw => sw.remove());
-			sliderRoot.insertBefore(groups[index], navWrapper);
+
+			// Prepare new group
+			currentWrap.classList.remove('active');
+			sliderRoot.insertBefore(currentWrap, navWrapper);
+
+			// Trigger fade-in
+			requestAnimationFrame(() => {
+				currentWrap.classList.add('active');
+			});
+
 			prevBtn.disabled = index === 0;
 			nextBtn.disabled = index === groups.length - 1;
 		}

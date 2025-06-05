@@ -1,6 +1,8 @@
 .timeline-slider {
   width: 100%;
   background: var(--parent-background-color, transparent);
+  margin: 0 0 1rem 0;
+  padding: 1rem 0;
 
   &.alignfull > .wp-block-group__inner-container {
     padding-left: var(--global-content-edge-padding, 15px);
@@ -10,30 +12,37 @@
   .wp-block-group__inner-container.kb-theme-content-width {
     margin-left: auto;
     margin-right: auto;
-    max-width: var( --global-content-width, 1290px );
+  }
+  
+  .kb-theme-content-width {
+    max-width: var(--global-content-width, 1290px);
   }
 
   .slide-wrap {
     margin-bottom: 2rem;
     overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    &.fade-in {
+      opacity: 1;
+    }
   }
 
   .tabs {
     display: flex;
-    border-bottom: 1px solid #ccc;
   }
 
   .tabs button {
     flex-grow: 1;
     padding: 0.5rem 1rem;
-    background: none;
+    background-color: var(--tab-background);
     cursor: pointer;
     font-weight: 600;
-    transition: background 0.2s ease;
+    transition: background-color 0.3s ease;
     max-width: 33.33%;
 
     &:hover {
-      background: #e0e0e0;
+      background-color: var(--tab-background-hover);
     }
   }
 
@@ -43,12 +52,22 @@
 
   .content {
     padding: 1rem;
+    position: relative;
+    min-height: 200px;
   }
 
   .slide {
-    display: none;
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    pointer-events: none;
     &.active {
-      display: block;
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      z-index: 1;
     }
   }
 
@@ -60,22 +79,23 @@
   }
 
   .nav-arrows button {
-    background-color: var(--arrow-bg);
+    background-color: var(--arrow-background);
     color: var(--arrow-text);
     border: none;
     padding: 0.5rem 1rem;
     font-size: 1rem;
     cursor: pointer;
     border-radius: 10px;
-    transition: background 0.2s ease;
+    transition: background-color 0.3s ease;
 
     &:disabled {
-      background: #ccc;
+      opacity: 0.8;
       cursor: not-allowed;
     }
 
     &:hover:not(:disabled) {
-      background: #005d8c;
+      background-color: var(--arrow-background-hover);
+      color: var(--arrow-text-hover);
     }
   }
 }

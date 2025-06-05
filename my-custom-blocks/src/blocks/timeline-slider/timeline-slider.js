@@ -6,6 +6,7 @@ import {
     BlockControls,
     InspectorControls,
     useClientId,
+    ColorPalette,
 } from '@wordpress/block-editor';
 import {
     PanelBody,
@@ -15,16 +16,23 @@ import {
     DropdownMenu,
 } from '@wordpress/components';
 import {
-    more,
-    arrowLeft,
-    arrowRight,
-    arrowUp,
-    arrowDown,
+    plus,
+    angleDown,
 } from '@wordpress/icons';
 import { dispatch } from '@wordpress/data';
 
 import './editor.scss';
 import './style.scss';
+
+const buildStyleVars = (attributes) => ({
+'--parent-background-color': attributes.parentBackgroundColor || undefined,
+'--tab-background': attributes.tabBackgroundColor || undefined,
+'--tab-background-hover': attributes.tabBackgroundHoverColor || undefined,
+'--arrow-background': attributes.arrowBackgroundColor || undefined,
+'--arrow-background-hover': attributes.arrowBackgroundHoverColor || undefined,
+'--arrow-text': attributes.arrowTextColor || undefined,
+'--arrow-text-hover': attributes.arrowTextHoverColor || undefined,
+});
 
 const ALLOWED_BLOCKS = ['rs/timeline-slider-child'];
 
@@ -36,9 +44,6 @@ registerBlockType('rs/timeline-slider', {
         align: {
             type: 'string',
         },
-        verticalAlignment: {
-            type: 'string',
-        },
         innerContentWidth: {
             type: 'boolean',
             default: true,
@@ -47,11 +52,27 @@ registerBlockType('rs/timeline-slider', {
             type: 'string',
             default: '',
         },
+        tabBackgroundColor: {
+            type: 'string',
+            default: '#eeeeee',
+        },
+        tabBackgroundHoverColor: {
+            type: 'string',
+            default: '#dddddd',
+        },
         arrowBackgroundColor: {
             type: 'string',
             default: '#000000',
         },
+        arrowBackgroundHoverColor: {
+            type: 'string',
+            default: '#333333',
+        },
         arrowTextColor: {
+            type: 'string',
+            default: '#ffffff',
+        },
+        arrowTextHoverColor: {
             type: 'string',
             default: '#ffffff',
         },
@@ -70,45 +91,61 @@ registerBlockType('rs/timeline-slider', {
         const { innerContentWidth } = attributes;
 
         const blockProps = useBlockProps({
-            className: `timeline-slider-editor ${innerContentWidth ? 'kb-theme-content-width' : ''}`,
+            className: `timeline-slider-editor ${colourClasses}`,
             'data-slider': 'true',
-
-            style: {
-                backgroundColor: attributes.parentBackgroundColor || undefined,
-                '--arrow-bg': attributes.arrowBackgroundColor,
-                '--arrow-text': attributes.arrowTextColor,
-            },
+            style: buildStyleVars(attributes),
         });
 
         return (
             <>
                 <InspectorControls>
                     <PanelBody title={__('Styles')}>
-                        <p>{__('Block Background')}</p>
-                        <input
-                            type="color"
-                            value={attributes.parentBackgroundColor}
-                            onChange={(e) => setAttributes({ parentBackgroundColor: e.target.value })}
-                        />
-                        <p>{__('Arrow Background')}</p>
-                        <input
-                            type="color"
-                            value={attributes.arrowBackgroundColor}
-                            onChange={(e) => setAttributes({ arrowBackgroundColor: e.target.value })}
-                        />
-                        <p>{__('Arrow Text Colour')}</p>
-                        <input
-                            type="color"
-                            value={attributes.arrowTextColor}
-                            onChange={(e) => setAttributes({ arrowTextColor: e.target.value })}
-                        />
+                        {[
+                            {
+                                label: __('Block Background'),
+                                attribute: 'parentBackgroundColor',
+                            },
+                            {
+                                label: __('Arrow Background'),
+                                attribute: 'arrowBackgroundColor',
+                            },
+                            {
+                                label: __('Arrow Hover Background'),
+                                attribute: 'arrowBackgroundHoverColor',
+                            },
+                            {
+                                label: __('Arrow Text Colour'),
+                                attribute: 'arrowTextColor',
+                            },
+                            {
+                                label: __('Arrow Hover Text Colour'),
+                                attribute: 'arrowTextHoverColor',
+                            },
+                            {
+                                label: __('Tab Background Colour'),
+                                attribute: 'tabBackgroundColor',
+                            },
+                            {
+                                label: __('Tab Hover Background Colour'),
+                                attribute: 'tabBackgroundHoverColor',
+                            },
+                        ].map(({ label, attribute }) => (
+                            <div key={attribute}>
+                                <p>{label}</p>
+                                <ColorPalette
+                                    value={attributes[attribute]}
+                                    onChange={(value) => setAttributes({ [attribute]: value })}
+                                    disableCustomColors={false}
+                                />
+                            </div>
+                        ))}
                     </PanelBody>
                 </InspectorControls>
 
                 <BlockControls>
                     <ToolbarGroup>
                         <ToolbarButton
-                            icon="plus"
+                            icon={plus}
                             label={__("Add Timeline Slide")}
                             onClick={() => {
                                 const newBlock = createBlock('rs/timeline-slider-child');
@@ -119,13 +156,20 @@ registerBlockType('rs/timeline-slider', {
                             aria-label="Add a timeline slide"
                         />
                         <DropdownMenu
-                            icon={more}
+                            icon={angleDown}
                             label={__("Timeline Slider Options")}
                             popoverProps={{ placement: 'bottom-start' }}
                         >
                             {() => (
-                                <div style={{ padding: '10px 12px', display: 'flex' }}>
+                                <div
+                                    style={{
+                                        padding: '10px',
+                                        display: 'flex',
+                                        minWidth: '205px',
+                                    }}
+                                >
                                     <ToggleControl
+                                        __nextHasNoMarginBottom
                                         label={__("Use Inner Content Width")}
                                         checked={innerContentWidth}
                                         onChange={(value) =>
@@ -139,9 +183,10 @@ registerBlockType('rs/timeline-slider', {
                 </BlockControls>
 
                 <div {...blockProps}>
-                    <div className={`wp-block-group__inner-container ${innerContentWidth ? 'kb-theme-content-width' : ''}`}>
+                    <div className={'wp-block-group__inner-container'}>
                         <InnerBlocks
                             allowedBlocks={ALLOWED_BLOCKS}
+                            template={[['rs/timeline-slider-child']]}
                             templateLock={false}
                             renderAppender={false}
                         />
@@ -154,13 +199,9 @@ registerBlockType('rs/timeline-slider', {
         const { innerContentWidth } = attributes;
 
         const blockProps = useBlockProps.save({
-            className: 'timeline-slider',
+            className: `timeline-slider ${colourClasses}`,
             'data-slider': 'true',
-            style: {
-                backgroundColor: attributes.parentBackgroundColor || undefined,
-                '--arrow-bg': attributes.arrowBackgroundColor,
-                '--arrow-text': attributes.arrowTextColor,
-            },
+            style: buildStyleVars(attributes),
         });
 
         return (
