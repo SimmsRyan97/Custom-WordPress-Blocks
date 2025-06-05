@@ -3,6 +3,7 @@
   flex-wrap: wrap;
   gap: 20px;
   padding: 1rem 0;
+  background: var(--parent-background-color, transparent);
 
   > .wp-block-my-custom-blocks-slide {
     position: relative;
@@ -23,6 +24,11 @@
     &.block-editor-block-list__block {
       margin: 0 !important;
     }
+  }
+
+  .nav-arrows button {
+    background-color: var(--arrow-bg);
+    color: var(--arrow-text);
   }
 
   .wp-block-my-custom-blocks-slide:empty::before {

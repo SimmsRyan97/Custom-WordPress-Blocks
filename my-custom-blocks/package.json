@@ -11,13 +11,14 @@
   "license": "ISC",
   "description": "Custom Gutenberg blocks",
   "devDependencies": {
-    "@wordpress/scripts": "^30.8.1",
+    "@wordpress/scripts": "^19.2.4",
     "css-loader": "^7.1.2",
     "sass": "^1.83.1",
     "sass-loader": "^16.0.4",
     "style-loader": "^4.0.0"
   },
   "dependencies": {
+    "@wordpress/icons": "^10.9.0",
     "uuid": "^11.1.0"
   }
 }

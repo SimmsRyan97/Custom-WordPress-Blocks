@@ -1,27 +1,36 @@
 .timeline-slider {
+  width: 100%;
+  background: var(--parent-background-color, transparent);
+
+  &.alignfull > .wp-block-group__inner-container {
+    padding-left: var(--global-content-edge-padding, 15px);
+    padding-right: var(--global-content-edge-padding, 15px);
+  }
+
+  .wp-block-group__inner-container.kb-theme-content-width {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: var( --global-content-width, 1290px );
+  }
+
   .slide-wrap {
-    border: 1px solid #ccc;
     margin-bottom: 2rem;
-    border-radius: 6px;
     overflow: hidden;
-    background: #fff;
   }
 
   .tabs {
     display: flex;
     border-bottom: 1px solid #ccc;
-    background: #f0f0f0;
   }
 
   .tabs button {
     flex-grow: 1;
     padding: 0.5rem 1rem;
     background: none;
-    border: none;
-    border-bottom: 3px solid transparent;
     cursor: pointer;
     font-weight: 600;
     transition: background 0.2s ease;
+    max-width: 33.33%;
 
     &:hover {
       background: #e0e0e0;
@@ -30,7 +39,6 @@
 
   .tabs button.active {
     border-bottom-color: #0073aa;
-    background: #fff;
   }
 
   .content {
@@ -52,13 +60,13 @@
   }
 
   .nav-arrows button {
-    background: #0073aa;
-    color: white;
+    background-color: var(--arrow-bg);
+    color: var(--arrow-text);
     border: none;
     padding: 0.5rem 1rem;
-    font-size: 1.1rem;
+    font-size: 1rem;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 10px;
     transition: background 0.2s ease;
 
     &:disabled {

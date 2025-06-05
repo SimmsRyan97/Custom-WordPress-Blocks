@@ -2,7 +2,7 @@
 /*
 Plugin Name: Ryan Simms Custom Blocks
 Description: Custom Gutenberg blocks.
-Version: 1.0.9
+Version: 1.0.25
 Author: Ryan Simms
 */
 
@@ -33,7 +33,7 @@ function rs_blocks_register_block() {
     );
 
     // List of blocks to register
-    $blocks = array( 'bar-chart', 'slider', 'timeline-slider' );
+    $blocks = array( 'bar-chart', 'timeline-slider', 'timeline-slider-child' );
 
     // Dynamically register blocks
     foreach ( $blocks as $block ) {

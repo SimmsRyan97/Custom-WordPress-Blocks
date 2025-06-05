@@ -1,3 +1,4 @@
+import { __ } from "@wordpress/i18n";
 import { registerBlockType } from '@wordpress/blocks';
 import {
 InnerBlocks,
@@ -7,13 +8,15 @@ useClientId,
 } from '@wordpress/block-editor';
 import { PanelBody, TextControl } from '@wordpress/components';
 import { useEffect, useState } from '@wordpress/element';
+
 import './editor.scss';
+import './style.scss';
 
 registerBlockType('rs/timeline-slider-child', {
     title: 'Time Slide',
     icon: 'slides',
     category: 'layout',
-    parent: ['rs/timeline-slider'], // restrict to only inside timeline-slider
+    parent: ['rs/timeline-slider'],
     attributes: {
         title: {
             type: 'string',
@@ -42,7 +45,7 @@ registerBlockType('rs/timeline-slider-child', {
                 <InspectorControls>
                     <PanelBody title="Slide Settings">
                         <TextControl
-                        label="Slide Title"
+                        label={__("Slide Title")}
                         value={attributes.title}
                         onChange={(title) => setAttributes({ title })}
                         />

@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-	const sliderRoot = document.querySelector('.timeline-slider[data-slider="true"]');
+	const sliderRoot = document.querySelector('.timeline-slider[data-slider="true"] .wp-block-group__inner-container');
 	if (!sliderRoot) return;
 
 	const slides = Array.from(sliderRoot.querySelectorAll('.slide'));
@@ -55,13 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
 				tabBtn.classList.add('active');
 
 				groupSlides.forEach(s => {
-					if (s.getAttribute('data-slide-id') === slideId) {
-						s.classList.add('active');
-						s.style.display = '';
-					} else {
-						s.classList.remove('active');
-						s.style.display = 'none';
-					}
+					s.classList.toggle('active', s.getAttribute('data-slide-id') === slideId);
+					s.style.display = s.getAttribute('data-slide-id') === slideId ? '' : 'none';
 				});
 			});
 
@@ -74,51 +69,50 @@ document.addEventListener('DOMContentLoaded', () => {
 		groups.push(slideWrap);
 	}
 
-	// Navigation arrows
-	const navWrapper = document.createElement('div');
-	navWrapper.className = 'nav-arrows';
+	if (slides.length > SLIDES_PER_GROUP) {
+		// Navigation arrows
+		const navWrapper = document.createElement('div');
+		navWrapper.className = 'nav-arrows';
 
-	const prevBtn = document.createElement('button');
-	prevBtn.className = 'prev';
-	prevBtn.textContent = '←';
-	prevBtn.disabled = true;
+		const prevBtn = document.createElement('button');
+		prevBtn.className = 'prev';
+		prevBtn.textContent = '←';
+		prevBtn.disabled = true;
 
-	const nextBtn = document.createElement('button');
-	nextBtn.className = 'next';
-	nextBtn.textContent = '→';
+		const nextBtn = document.createElement('button');
+		nextBtn.className = 'next';
+		nextBtn.textContent = '→';
 
-	navWrapper.appendChild(prevBtn);
-	navWrapper.appendChild(nextBtn);
-	sliderRoot.appendChild(navWrapper);
+		navWrapper.appendChild(prevBtn);
+		navWrapper.appendChild(nextBtn);
+		sliderRoot.appendChild(navWrapper);
 
-	let currentGroup = 0;
+		let currentGroup = 0;
 
-	function showGroup(index) {
-		// Clear previous groups
-		sliderRoot.querySelectorAll('.slide-wrap').forEach(sw => sw.remove());
+		function showGroup(index) {
+			sliderRoot.querySelectorAll('.slide-wrap').forEach(sw => sw.remove());
+			sliderRoot.insertBefore(groups[index], navWrapper);
+			prevBtn.disabled = index === 0;
+			nextBtn.disabled = index === groups.length - 1;
+		}
 
-		// Show current
-		sliderRoot.insertBefore(groups[index], navWrapper);
+		prevBtn.addEventListener('click', () => {
+			if (currentGroup > 0) {
+				currentGroup--;
+				showGroup(currentGroup);
+			}
+		});
 
-		// Button state
-		prevBtn.disabled = index === 0;
-		nextBtn.disabled = index === groups.length - 1;
+		nextBtn.addEventListener('click', () => {
+			if (currentGroup < groups.length - 1) {
+				currentGroup++;
+				showGroup(currentGroup);
+			}
+		});
+
+		showGroup(0);
+	} else {
+		// Just show the single group, no arrows
+		sliderRoot.appendChild(groups[0]);
 	}
-
-	prevBtn.addEventListener('click', () => {
-		if (currentGroup > 0) {
-			currentGroup--;
-			showGroup(currentGroup);
-		}
-	});
-
-	nextBtn.addEventListener('click', () => {
-		if (currentGroup < groups.length - 1) {
-			currentGroup++;
-			showGroup(currentGroup);
-		}
-	});
-
-	// Init first group
-	showGroup(0);
 });
