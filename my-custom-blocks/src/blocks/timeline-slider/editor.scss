@@ -1,11 +1,75 @@
-.editor-styles-wrapper .timeline-slider {
+.editor-styles-wrapper .timeline-slider-editor {
   .content {
     position: relative;
+    min-height: 150px;
+    padding: 1rem;
+    border: 1px dashed #ccc;
+    background: rgba(0, 0, 0, 0.03);
   }
 
   .slide {
     position: absolute;
     top: 0;
+    left: 0;
+    right: 0;
+    opacity: 0.5;
+    pointer-events: none;
+
+    &.active {
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 1;
+    }
+  }
+
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .tabs button {
+    flex: 1;
+    padding: 0.5rem;
+    font-size: var(--rs-slider-tab-font-size, 1rem);
+    font-family: var(--rs-slider-tab-font-family, inherit);
+    font-weight: 600;
+    border: var(--rs-slider-tab-border-width, 0) solid var(--rs-slider-tab-border-color, transparent);
+    border-radius: var(--rs-slider-tab-border-radius, 0);
+    background-color: var(--rs-slider-tab-background, #eee);
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: var(--rs-slider-tab-background-hover, #ddd);
+    }
+  }
+
+  .nav-arrows {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+
+    button {
+      background-color: var(--rs-slider-arrow-background, #eee);
+      color: var(--rs-slider-arrow-text, #333);
+      border: none;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background-color: var(--rs-slider-arrow-background-hover, #ddd);
+        color: var(--rs-slider-arrow-text-hover, #000);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
   }
 }
 
@@ -13,9 +77,11 @@
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  margin: 0 0 1rem 0;
+  margin-bottom: 1rem;
   padding: 1rem 0;
-  background: var(--rs-slider-parent-background-color, transparent);
+  background: var(--rs-slider-background, transparent);
+  border: 1px solid #dcdcdc;
+  border-radius: 10px;
 
   &.alignfull > .wp-block-group__inner-container {
     padding-left: var(--global-content-edge-padding, 15px);
@@ -29,35 +95,6 @@
 
   .kb-theme-content-width {
     max-width: var(--global-content-width, 1290px);
-  }
-
-  > .wp-block-my-custom-blocks-slide {
-    position: relative;
-    min-width: 280px;
-    max-width: 300px;
-    flex: 1 0 auto;
-    background: #f9f9f9;
-    padding: 1rem;
-    border-radius: 6px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    transition: border-color 0.2s ease;
-
-    &:hover {
-      border-color: #007cba;
-    }
-
-    &.block-editor-block-list__block {
-      margin: 0 !important;
-    }
-  }
-
-  .wp-block-my-custom-blocks-slide:empty::before {
-    content: 'Empty slide';
-    display: block;
-    text-align: center;
-    padding: 2rem 1rem;
-    font-style: italic;
-    color: #aaa;
   }
 
   > div {

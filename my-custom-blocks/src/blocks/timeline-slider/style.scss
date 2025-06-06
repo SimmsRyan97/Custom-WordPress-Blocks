@@ -1,7 +1,7 @@
 .timeline-slider {
   width: 100%;
-  background: var(--rs-slider-parent-background-color, transparent);
-  margin: 0 0 1rem 0;
+  background: var(--rs-slider-background, transparent);
+  margin-bottom: 1rem;
   padding: 1rem 0;
 
   &.alignfull > .wp-block-group__inner-container {
@@ -13,7 +13,7 @@
     margin-left: auto;
     margin-right: auto;
   }
-  
+
   .kb-theme-content-width {
     max-width: var(--global-content-width, 1290px);
   }
@@ -23,6 +23,7 @@
     overflow: hidden;
     opacity: 0;
     transition: opacity 0.3s ease;
+
     &.active {
       opacity: 1;
     }
@@ -36,19 +37,21 @@
   .tabs button {
     flex-grow: 1;
     padding: 0.5rem 1rem;
-    background-color: var(--rs-slider-tab-background);
-    cursor: pointer;
+    background-color: var(--rs-slider-tab-background, transparent);
+    border-width: var(--rs-slider-tab-border-width, 0);
+    border-style: solid;
+    border-color: var(--rs-slider-tab-border-color, transparent);
+    border-radius: var(--rs-slider-tab-border-radius, 0);
     font-weight: 600;
+    font-family: var(--rs-slider-tab-font-family, inherit);
+    font-size: var(--rs-slider-tab-font-size, 1rem);
+    cursor: pointer;
     transition: background-color 0.3s ease;
     max-width: 33.33%;
 
     &:hover {
-      background-color: var(--rs-slider-tab-background-hover);
+      background-color: var(--rs-slider-tab-background-hover, transparent);
     }
-  }
-
-  .tabs button.active {
-    border-bottom-color: #0073aa;
   }
 
   .content {
@@ -64,6 +67,7 @@
     visibility: hidden;
     transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
     pointer-events: none;
+
     &.active {
       opacity: 1;
       visibility: visible;
@@ -80,14 +84,14 @@
   }
 
   .nav-arrows button {
-    background-color: var(--rs-slider-arrow-background);
-    color: var(--rs-slider-arrow-text);
+    background-color: var(--rs-slider-arrow-background, transparent);
+    color: var(--rs-slider-arrow-text, currentColor);
     border: none;
     padding: 0.5rem 1rem;
     font-size: 1rem;
     cursor: pointer;
     border-radius: 10px;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 
     &:disabled {
       opacity: 0.8;
@@ -95,8 +99,8 @@
     }
 
     &:hover:not(:disabled) {
-      background-color: var(----rs-slider-arrow-background-hover);
-      color: var(--rs-slider-arrow-text-hover);
+      background-color: var(--rs-slider-arrow-background-hover, transparent);
+      color: var(--rs-slider-arrow-text-hover, currentColor);
     }
   }
 }

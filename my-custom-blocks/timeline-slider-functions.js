@@ -139,5 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	} else {
 		// Just show the single group, no arrows
 		sliderRoot.appendChild(groups[0]);
+		groups[0].classList.add('active');
 	}
 });
