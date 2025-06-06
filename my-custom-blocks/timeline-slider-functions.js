@@ -1,144 +1,161 @@
 document.addEventListener('DOMContentLoaded', () => {
-	const sliderRoot = document.querySelector('.timeline-slider[data-slider="true"] .wp-block-group__inner-container');
-	if (!sliderRoot) return;
+  const sliderRoot = document.querySelector('.timeline-slider[data-slider="true"] .wp-block-group__inner-container');
+  if (!sliderRoot) return;
 
-	const slides = Array.from(sliderRoot.querySelectorAll('.slide'));
-	if (slides.length === 0) return;
+  const slides = Array.from(sliderRoot.querySelectorAll('.slide'));
+  if (slides.length === 0) return;
 
-	const SLIDES_PER_GROUP = 3;
-	const totalGroups = Math.ceil(slides.length / SLIDES_PER_GROUP);
+  const SLIDES_PER_GROUP = 3;
+  const totalGroups = Math.ceil(slides.length / SLIDES_PER_GROUP);
 
-	// Remove slides before rebuilding DOM
-	slides.forEach(slide => slide.remove());
+  function getMaxHeight(slides) {
+    let maxHeight = 0;
+    slides.forEach(slide => {
+      const origDisplay = slide.style.display;
+      const origPos = slide.style.position;
 
-	const groups = [];
+      slide.style.display = 'block';
+      slide.style.position = 'relative';
 
-	for (let groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
-		const groupSlides = slides.slice(
-			groupIndex * SLIDES_PER_GROUP,
-			(groupIndex + 1) * SLIDES_PER_GROUP
-		);
+      const h = slide.offsetHeight;
+      if (h > maxHeight) maxHeight = h;
 
-		const slideWrap = document.createElement('div');
-		slideWrap.className = 'slide-wrap';
+      slide.style.display = origDisplay;
+      slide.style.position = origPos;
+    });
+    return maxHeight;
+  }
 
-		const tabsContainer = document.createElement('div');
-		tabsContainer.className = 'tabs';
+  const maxHeight = getMaxHeight(slides);
 
-		const contentContainer = document.createElement('div');
-		contentContainer.className = 'content';
+  // Remove slides before rebuilding DOM
+  slides.forEach(slide => slide.remove());
 
-		const usedSlideIds = new Set();
+  const groups = [];
 
-		groupSlides.forEach((slide, index) => {
-			// Ensure unique slideId per group
-			let baseId = slide.getAttribute('data-slide-id') || `slide-${groupIndex}-${index}`;
-			let slideId = baseId;
-			let counter = 1;
-			while (usedSlideIds.has(slideId)) {
-				slideId = `${baseId}-${counter}`;
-				counter++;
-			}
-			usedSlideIds.add(slideId);
+  for (let groupIndex = 0; groupIndex < totalGroups; groupIndex++) {
+    const groupSlides = slides.slice(
+      groupIndex * SLIDES_PER_GROUP,
+      (groupIndex + 1) * SLIDES_PER_GROUP
+    );
 
-			const slideTitle = slide.getAttribute('data-title') || `Slide ${groupIndex * SLIDES_PER_GROUP + index + 1}`;
+    const slideWrap = document.createElement('div');
+    slideWrap.className = 'slide-wrap';
 
-			slide.setAttribute('data-slide-id', slideId);
-			slide.setAttribute('data-title', slideTitle);
+    const tabsContainer = document.createElement('div');
+    tabsContainer.className = 'tabs';
 
-			const tabBtn = document.createElement('button');
-			tabBtn.type = 'button';
-			tabBtn.className = 'tab-button';
-			tabBtn.textContent = slideTitle;
-			tabBtn.dataset.target = slideId;
+    const contentContainer = document.createElement('div');
+    contentContainer.className = 'content';
 
-			if (index === 0) {
-				tabBtn.classList.add('active');
-				slide.classList.add('active');
-				slide.style.display = '';
-			} else {
-				slide.classList.remove('active');
-			}
+    // Set fixed height for the content container to tallest slide height across all groups
+    contentContainer.style.minHeight = maxHeight + 'px';
 
-			tabBtn.addEventListener('click', () => {
-				tabsContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-				tabBtn.classList.add('active');
+    const usedSlideIds = new Set();
 
-				groupSlides.forEach(s => {
-					if (s.getAttribute('data-slide-id') === slideId) {
-						s.classList.add('active');
-					} else {
-						s.classList.remove('active');
-					}
-				});
-			});
+    groupSlides.forEach((slide, index) => {
+      let baseId = slide.getAttribute('data-slide-id') || `slide-${groupIndex}-${index}`;
+      let slideId = baseId;
+      let counter = 1;
+      while (usedSlideIds.has(slideId)) {
+        slideId = `${baseId}-${counter}`;
+        counter++;
+      }
+      usedSlideIds.add(slideId);
 
-			tabsContainer.appendChild(tabBtn);
-			contentContainer.appendChild(slide);
-		});
+      const slideTitle = slide.getAttribute('data-title') || `Slide ${groupIndex * SLIDES_PER_GROUP + index + 1}`;
 
-		slideWrap.appendChild(tabsContainer);
-		slideWrap.appendChild(contentContainer);
-		groups.push(slideWrap);
-	}
+      slide.setAttribute('data-slide-id', slideId);
+      slide.setAttribute('data-title', slideTitle);
 
-	if (slides.length > SLIDES_PER_GROUP) {
-		// Navigation arrows
-		const navWrapper = document.createElement('div');
-		navWrapper.className = 'nav-arrows';
+      const tabBtn = document.createElement('button');
+      tabBtn.type = 'button';
+      tabBtn.className = 'tab-button';
+      tabBtn.textContent = slideTitle;
+      tabBtn.dataset.target = slideId;
 
-		const prevBtn = document.createElement('button');
-		prevBtn.className = 'prev';
-		prevBtn.textContent = '←';
-		prevBtn.disabled = true;
+      if (index === 0) {
+        tabBtn.classList.add('active');
+        slide.classList.add('active');
+        slide.style.display = '';
+      } else {
+        slide.classList.remove('active');
+      }
 
-		const nextBtn = document.createElement('button');
-		nextBtn.className = 'next';
-		nextBtn.textContent = '→';
+      tabBtn.addEventListener('click', () => {
+        tabsContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        tabBtn.classList.add('active');
 
-		navWrapper.appendChild(prevBtn);
-		navWrapper.appendChild(nextBtn);
-		sliderRoot.appendChild(navWrapper);
+        groupSlides.forEach(s => {
+          if (s.getAttribute('data-slide-id') === slideId) {
+            s.classList.add('active');
+          } else {
+            s.classList.remove('active');
+          }
+        });
+      });
 
-		let currentGroup = 0;
+      tabsContainer.appendChild(tabBtn);
+      contentContainer.appendChild(slide);
+    });
 
-		function showGroup(index) {
-			const currentWrap = groups[index];
+    slideWrap.appendChild(tabsContainer);
+    slideWrap.appendChild(contentContainer);
+    groups.push(slideWrap);
+  }
 
-			// Remove all existing wraps
-			sliderRoot.querySelectorAll('.slide-wrap').forEach(sw => sw.remove());
+  if (slides.length > SLIDES_PER_GROUP) {
+    const navWrapper = document.createElement('div');
+    navWrapper.className = 'nav-arrows';
 
-			// Prepare new group
-			currentWrap.classList.remove('active');
-			sliderRoot.insertBefore(currentWrap, navWrapper);
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'prev';
+    prevBtn.textContent = '←';
+    prevBtn.disabled = true;
 
-			// Trigger fade-in
-			queueMicrotask(() => {
-				currentWrap.classList.add('active');
-			});
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'next';
+    nextBtn.textContent = '→';
 
-			prevBtn.disabled = index === 0;
-			nextBtn.disabled = index === groups.length - 1;
-		}
+    navWrapper.appendChild(prevBtn);
+    navWrapper.appendChild(nextBtn);
+    sliderRoot.appendChild(navWrapper);
 
-		prevBtn.addEventListener('click', () => {
-			if (currentGroup > 0) {
-				currentGroup--;
-				showGroup(currentGroup);
-			}
-		});
+    let currentGroup = 0;
 
-		nextBtn.addEventListener('click', () => {
-			if (currentGroup < groups.length - 1) {
-				currentGroup++;
-				showGroup(currentGroup);
-			}
-		});
+    function showGroup(index) {
+      const currentWrap = groups[index];
 
-		showGroup(0);
-	} else {
-		// Just show the single group, no arrows
-		sliderRoot.appendChild(groups[0]);
-		groups[0].classList.add('active');
-	}
+      sliderRoot.querySelectorAll('.slide-wrap').forEach(sw => sw.remove());
+
+      currentWrap.classList.remove('active');
+      sliderRoot.insertBefore(currentWrap, navWrapper);
+
+      queueMicrotask(() => {
+        currentWrap.classList.add('active');
+      });
+
+      prevBtn.disabled = index === 0;
+      nextBtn.disabled = index === groups.length - 1;
+    }
+
+    prevBtn.addEventListener('click', () => {
+      if (currentGroup > 0) {
+        currentGroup--;
+        showGroup(currentGroup);
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentGroup < groups.length - 1) {
+        currentGroup++;
+        showGroup(currentGroup);
+      }
+    });
+
+    showGroup(0);
+  } else {
+    sliderRoot.appendChild(groups[0]);
+    groups[0].classList.add('active');
+  }
 });

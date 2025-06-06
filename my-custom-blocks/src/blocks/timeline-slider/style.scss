@@ -1,8 +1,6 @@
 .timeline-slider {
   width: 100%;
   background: var(--rs-slider-background, transparent);
-  margin-bottom: 1rem;
-  padding: 1rem 0;
 
   &.alignfull > .wp-block-group__inner-container {
     padding-left: var(--global-content-edge-padding, 15px);
@@ -38,9 +36,19 @@
     flex-grow: 1;
     padding: 0.5rem 1rem;
     background-color: var(--rs-slider-tab-background, transparent);
-    border-width: var(--rs-slider-tab-border-width, 0);
     border-style: solid;
-    border-color: var(--rs-slider-tab-border-color, transparent);
+    /* Individual border widths fallback to combined width */
+    border-top-width: var(--rs-slider-tab-border-top-width, var(--rs-slider-tab-border-width, 0));
+    border-right-width: var(--rs-slider-tab-border-right-width, var(--rs-slider-tab-border-width, 0));
+    border-bottom-width: var(--rs-slider-tab-border-bottom-width, var(--rs-slider-tab-border-width, 0));
+    border-left-width: var(--rs-slider-tab-border-left-width, var(--rs-slider-tab-border-width, 0));
+
+    /* Border colours with fallback checkerboard for unset */
+    border-top-color: var(--rs-slider-tab-border-top-color, var(--rs-slider-tab-border-color, repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px));
+    border-right-color: var(--rs-slider-tab-border-right-color, var(--rs-slider-tab-border-color, repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px));
+    border-bottom-color: var(--rs-slider-tab-border-bottom-color, var(--rs-slider-tab-border-color, repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px));
+    border-left-color: var(--rs-slider-tab-border-left-color, var(--rs-slider-tab-border-color, repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px));
+
     border-radius: var(--rs-slider-tab-border-radius, 0);
     font-weight: 600;
     font-family: var(--rs-slider-tab-font-family, inherit);
@@ -57,7 +65,8 @@
   .content {
     padding: 1rem;
     position: relative;
-    min-height: 200px;
+    height: auto;
+    transition: height 0.3s ease;
   }
 
   .slide {

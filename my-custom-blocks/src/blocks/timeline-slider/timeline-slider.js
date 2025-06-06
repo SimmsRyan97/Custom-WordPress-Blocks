@@ -5,7 +5,6 @@ import {
     InnerBlocks,
     BlockControls,
     InspectorControls,
-    useClientId,
     ColorPalette,
 } from '@wordpress/block-editor';
 import {
@@ -22,7 +21,7 @@ import {
     plus,
     angleDown,
 } from '@wordpress/icons';
-import { dispatch } from '@wordpress/data';
+import { useSelect, dispatch } from '@wordpress/data';
 import { useEffect } from '@wordpress/element';
 
 import './editor.scss';
@@ -30,6 +29,114 @@ import './style.scss';
 
 // Prefix for CSS variables
 const VAR_PREFIX = '--rs-slider-';
+const ALLOWED_BLOCKS = ['rs/timeline-slider-child'];
+
+const fontSizeMap = {
+    sm: 'var(--global-kb-font-size-sm)',
+    md: 'var(--global-kb-font-size-md)',
+    lg: 'var(--global-kb-font-size-lg)',
+    xl: 'var(--global-kb-font-size-xl)',
+    '2xl': 'var(--global-kb-font-size-2xl)',
+    '3xl': 'var(--global-kb-font-size-xxxl)',
+};
+
+// Checkerboard style for transparent colour fallback
+const checkerboardStyle = {
+    background: 'repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px',
+    borderRadius: '50%',
+    width: '30px',
+    height: '30px',
+    border: '1px solid #ccc',
+    cursor: 'pointer',
+    display: 'inline-block',
+};
+
+// Colour circle with fallback & clear support
+const ColorPickerCircle = ({ value, onChange, label }) => {
+    // Clear colour handler
+    const clearColor = () => onChange('');
+
+    return (
+        <div style={{ marginBottom: '1em' }}>
+            <label style={{ display: 'block', marginBottom: '0.5em', fontSize: '0.85rem' }}>{label}</label>
+            <DropdownMenu
+                icon={null}
+                label={label}
+                toggleProps={{
+                    style: {
+                        backgroundColor: value || 'transparent',
+                        ...(!value ? checkerboardStyle : {
+                            borderRadius: '50%',
+                            width: '30px',
+                            height: '30px',
+                            border: '1px solid #ccc',
+                            cursor: 'pointer',
+                        }),
+                    },
+                    'aria-label': `${label} Colour Picker`,
+                    title: value ? `Current colour: ${value}. Click to change.` : 'No colour set. Click to pick colour.',
+                }}
+                popoverProps={{ placement: 'bottom-start', offset: [0, 4] }}
+            >
+                {() => (
+                    <>
+                        <ColorPalette
+                            value={value}
+                            onChange={onChange}
+                            disableCustomColors={false}
+                        />
+                        {value && (
+                            <div style={{ marginTop: '8px', textAlign: 'right' }}>
+                                <button
+                                    type="button"
+                                    onClick={clearColor}
+                                    style={{
+                                        background: 'transparent',
+                                        border: 'none',
+                                        color: '#666',
+                                        cursor: 'pointer',
+                                        fontSize: '0.85rem',
+                                        textDecoration: 'underline',
+                                        padding: 0,
+                                    }}
+                                >
+                                    Clear colour
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
+            </DropdownMenu>
+        </div>
+    );
+};
+
+// Unit + value input control
+const UnitInputControl = ({ label, value, unit, onChangeValue, onChangeUnit }) => (
+    <div style={{ marginBottom: '1em' }}>
+        <label style={{ fontWeight: '600', display: 'block', marginBottom: '0.25em' }}>{label}</label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
+            <TextControl
+                __nextHasNoMarginBottom
+                value={value}
+                onChange={onChangeValue}
+                type="number"
+                style={{ width: '70px' }}
+                min="0"
+            />
+            <SelectControl
+                value={unit}
+                options={[
+                    { label: 'px', value: 'px' },
+                    { label: 'em', value: 'em' },
+                    { label: 'rem', value: 'rem' },
+                ]}
+                onChange={onChangeUnit}
+                style={{ width: '70px' }}
+            />
+        </div>
+    </div>
+);
 
 const buildStyleVars = (attributes) => ({
     [`${VAR_PREFIX}background`]: attributes.background || undefined,
@@ -42,68 +149,56 @@ const buildStyleVars = (attributes) => ({
     [`${VAR_PREFIX}tab-font-family`]: attributes.tabFontFamily === 'heading'
         ? 'var(--global-heading-font-family)'
         : 'var(--global-body-font-family)',
-    [`${VAR_PREFIX}tab-border-color`]: attributes.tabBorderColor || undefined,
-    [`${VAR_PREFIX}tab-border-width`]: attributes.tabBorderWidth || undefined,
+    ...(attributes.useIndividualBorders
+        ? {
+            [`${VAR_PREFIX}tab-border-top-color`]: attributes.tabBorderTopColor || undefined,
+            [`${VAR_PREFIX}tab-border-right-color`]: attributes.tabBorderRightColor || undefined,
+            [`${VAR_PREFIX}tab-border-bottom-color`]: attributes.tabBorderBottomColor || undefined,
+            [`${VAR_PREFIX}tab-border-left-color`]: attributes.tabBorderLeftColor || undefined,
+        }
+        : {
+            [`${VAR_PREFIX}tab-border-color`]: attributes.tabBorderColor || undefined,
+        }),
     [`${VAR_PREFIX}tab-border-radius`]: attributes.tabBorderRadius || undefined,
     [`${VAR_PREFIX}tab-font-size`]: fontSizeMap[attributes.tabFontSize] || undefined,
 });
 
-const fontSizeMap = {
-    sm: 'clamp(0.75rem, 0.8vw, 0.9rem)',
-    md: 'clamp(0.875rem, 1vw, 1rem)',
-    lg: 'clamp(1rem, 1.2vw, 1.25rem)',
-    xl: 'clamp(1.25rem, 1.5vw, 1.5rem)',
-    '2xl': 'clamp(1.5rem, 1.75vw, 1.75rem)',
-    '3xl': 'clamp(1.75rem, 2vw, 2rem)',
+const formatValueWithUnit = (val, unit = 'px') => {
+    if (val === undefined || val === '') return undefined;
+    return `${val}${unit}`;
 };
-
-const ALLOWED_BLOCKS = ['rs/timeline-slider-child'];
-
-const ColorPickerCircle = ({ value, onChange, label }) => (
-    <div>
-        <label style={{ display: 'block', marginBottom: '0.5em', fontSize: '0.85rem' }}>{label}</label>
-        <DropdownMenu
-            icon={null}
-            label={label}
-            toggleProps={{
-                style: {
-                    backgroundColor: value || 'repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px',
-                    borderRadius: '50%',
-                    width: '30px',
-                    height: '30px',
-                    border: '1px solid #ccc',
-                    cursor: 'pointer',
-                },
-                'aria-label': `${label} Colour Picker`,
-            }}
-            popoverProps={{ placement: 'bottom-start', offset: [0, 4] }}
-        >
-            {() => (
-                <ColorPalette
-                    value={value}
-                    onChange={onChange}
-                    disableCustomColors={false}
-                />
-            )}
-        </DropdownMenu>
-    </div>
-);
 
 registerBlockType('rs/timeline-slider', {
     title: 'Timeline Slider',
     icon: 'schedule',
     category: 'layout',
     attributes: {
+        activeSlideIndex: { type: 'number' },
         align: { type: 'string' },
         innerContentWidth: { type: 'boolean', default: false },
         background: { type: 'string', default: '' },
         tabBackground: { type: 'string', default: '' },
         tabBackgroundHover: { type: 'string', default: '' },
-        tabFontFamily: { type: 'string', default: 'body' },
+        tabFontFamily: { type: 'string', default: 'heading' },
         tabFontSize: { type: 'string', default: 'md' },
+        useIndividualBorders: { type: 'boolean', default: false },
+        tabBorderTopWidth: { type: 'string', default: '' },
+        tabBorderRightWidth: { type: 'string', default: '' },
+        tabBorderBottomWidth: { type: 'string', default: '' },
+        tabBorderLeftWidth: { type: 'string', default: '' },
+        tabBorderTopWidthUnit: { type: 'string', default: 'px' },
+        tabBorderRightWidthUnit: { type: 'string', default: 'px' },
+        tabBorderBottomWidthUnit: { type: 'string', default: 'px' },
+        tabBorderLeftWidthUnit: { type: 'string', default: 'px' },
+        tabBorderTopColor: { type: 'string', default: '' },
+        tabBorderRightColor: { type: 'string', default: '' },
+        tabBorderBottomColor: { type: 'string', default: '' },
+        tabBorderLeftColor: { type: 'string', default: '' },
         tabBorderColor: { type: 'string', default: '' },
         tabBorderWidth: { type: 'string', default: '' },
+        tabBorderWidthUnit: { type: 'string', default: 'px' },
         tabBorderRadius: { type: 'string', default: '' },
+        tabBorderRadiusUnit: { type: 'string', default: 'px' },
         arrowBackground: { type: 'string', default: '' },
         arrowBackgroundHover: { type: 'string', default: '' },
         arrowText: { type: 'string', default: '' },
@@ -121,7 +216,33 @@ registerBlockType('rs/timeline-slider', {
         __experimentalVerticalAlignment: true,
     },
     edit({ attributes, setAttributes, clientId }) {
-        const { innerContentWidth } = attributes;
+        const { activeSlideIndex } = attributes;
+
+        const {
+            innerContentWidth,
+            useIndividualBorders,
+
+            tabBorderTopWidth,
+            tabBorderTopWidthUnit,
+            tabBorderRightWidth,
+            tabBorderRightWidthUnit,
+            tabBorderBottomWidth,
+            tabBorderBottomWidthUnit,
+            tabBorderLeftWidth,
+            tabBorderLeftWidthUnit,
+
+            tabBorderTopColor,
+            tabBorderRightColor,
+            tabBorderBottomColor,
+            tabBorderLeftColor,
+
+            tabBorderWidth,
+            tabBorderWidthUnit,
+            tabBorderColor,
+
+            tabBorderRadius,
+            tabBorderRadiusUnit,
+        } = attributes;
 
         useEffect(() => {
             if (!attributes.blockId) {
@@ -135,12 +256,33 @@ registerBlockType('rs/timeline-slider', {
             const styleId = `rs-timeline-slider-vars-${attributes.blockId}`;
             let styleTag = document.getElementById(styleId);
 
-            const cssVars = Object.entries(buildStyleVars(attributes))
-                .filter(([, value]) => value !== undefined)
+            // Compose CSS variable values with units
+            const cssVars = {
+                ...buildStyleVars(attributes),
+
+                // Override border widths with units
+                ...(useIndividualBorders
+                    ? {
+                        [`${VAR_PREFIX}tab-border-top-width`]: formatValueWithUnit(tabBorderTopWidth, tabBorderTopWidthUnit || 'px'),
+                        [`${VAR_PREFIX}tab-border-right-width`]: formatValueWithUnit(tabBorderRightWidth, tabBorderRightWidthUnit || 'px'),
+                        [`${VAR_PREFIX}tab-border-bottom-width`]: formatValueWithUnit(tabBorderBottomWidth, tabBorderBottomWidthUnit || 'px'),
+                        [`${VAR_PREFIX}tab-border-left-width`]: formatValueWithUnit(tabBorderLeftWidth, tabBorderLeftWidthUnit || 'px'),
+                    }
+                    : {
+                        [`${VAR_PREFIX}tab-border-width`]: formatValueWithUnit(tabBorderWidth, tabBorderWidthUnit || 'px'),
+                    }
+                ),
+
+                // Border radius with unit
+                [`${VAR_PREFIX}tab-border-radius`]: formatValueWithUnit(tabBorderRadius, tabBorderRadiusUnit || 'px'),
+            };
+
+            const filteredCssVars = Object.entries(cssVars)
+                .filter(([, value]) => value !== undefined && value !== '')
                 .map(([key, value]) => `${key}: ${value};`)
                 .join('\n');
 
-            const css = `.${attributes.blockId} {\n${cssVars}\n}`;
+            const css = `.${attributes.blockId} {\n${filteredCssVars}\n}`;
 
             if (!styleTag) {
                 styleTag = document.createElement('style');
@@ -155,17 +297,34 @@ registerBlockType('rs/timeline-slider', {
                     styleTag.remove();
                 }
             };
-        }, [attributes]);
+        }, [
+            attributes,
+            tabBorderTopWidth, tabBorderTopWidthUnit,
+            tabBorderRightWidth, tabBorderRightWidthUnit,
+            tabBorderBottomWidth, tabBorderBottomWidthUnit,
+            tabBorderLeftWidth, tabBorderLeftWidthUnit,
+            tabBorderWidth, tabBorderWidthUnit,
+            tabBorderRadius, tabBorderRadiusUnit,
+        ]);
 
-        const blockProps = useBlockProps({
-            className: `timeline-slider-editor ${attributes.blockId}`,
-            'data-slider': 'true',
-        });
+        // Get all inner blocks (child slides)
+        const innerBlocks = useSelect(
+            (select) => select('core/block-editor').getBlocks(clientId),
+            [clientId]
+        );
+
+        // Clamp activeSlideIndex if necessary
+        const clampedIndex = Math.min(activeSlideIndex, innerBlocks.length - 1);
+
+        // Handle navigation clicks
+        const goToSlide = (index) => {
+            setAttributes({ activeSlideIndex: index });
+        };
 
         return (
             <>
                 <InspectorControls>
-                    <PanelBody title={__('Styles')}>
+                    <PanelBody title={__('Styles')} initialOpen={true}>
                         <ColorPickerCircle
                             label={__('Block Background')}
                             value={attributes.background}
@@ -185,22 +344,98 @@ registerBlockType('rs/timeline-slider', {
                                     onChange={(value) => setAttributes({ tabBackgroundHover: value })}
                                 />
                             </div>
-                            <ColorPickerCircle
-                                label={__('Tab Border Colour')}
-                                value={attributes.tabBorderColor}
-                                onChange={(value) => setAttributes({ tabBorderColor: value })}
-                            />
-                            <TextControl
-                                label={__('Border Width')}
-                                value={attributes.tabBorderWidth}
-                                onChange={(value) => setAttributes({ tabBorderWidth: value })}
-                            />
-                            <TextControl
-                                label={__('Border Radius')}
-                                value={attributes.tabBorderRadius}
-                                onChange={(value) => setAttributes({ tabBorderRadius: value })}
-                            />
                         </div>
+
+                        {/* Border Controls */}
+                        <ToggleControl
+                            label={__('Use Individual Borders')}
+                            checked={useIndividualBorders}
+                            onChange={(val) => setAttributes({ useIndividualBorders: val })}
+                            style={{ marginTop: '1em' }}
+                        />
+
+                        {!useIndividualBorders && (
+                            <>
+                                <ColorPickerCircle
+                                    label={__('Tab Border Colour')}
+                                    value={tabBorderColor}
+                                    onChange={(value) => setAttributes({ tabBorderColor: value })}
+                                />
+                                <UnitInputControl
+                                    label={__('Border Width')}
+                                    value={tabBorderWidth}
+                                    unit={tabBorderWidthUnit}
+                                    onChangeValue={(val) => setAttributes({ tabBorderWidth: val })}
+                                    onChangeUnit={(unit) => setAttributes({ tabBorderWidthUnit: unit })}
+                                />
+                            </>
+                        )}
+
+                        {useIndividualBorders && (
+                            <>
+                                <UnitInputControl
+                                    label={__('Top Border Width')}
+                                    value={tabBorderTopWidth}
+                                    unit={tabBorderTopWidthUnit}
+                                    onChangeValue={(val) => setAttributes({ tabBorderTopWidth: val })}
+                                    onChangeUnit={(unit) => setAttributes({ tabBorderTopWidthUnit: unit })}
+                                />
+                                <ColorPickerCircle
+                                    label={__('Top Border Colour')}
+                                    value={tabBorderTopColor}
+                                    onChange={(value) => setAttributes({ tabBorderTopColor: value })}
+                                />
+
+                                <UnitInputControl
+                                    label={__('Right Border Width')}
+                                    value={tabBorderRightWidth}
+                                    unit={tabBorderRightWidthUnit}
+                                    onChangeValue={(val) => setAttributes({ tabBorderRightWidth: val })}
+                                    onChangeUnit={(unit) => setAttributes({ tabBorderRightWidthUnit: unit })}
+                                />
+                                <ColorPickerCircle
+                                    label={__('Right Border Colour')}
+                                    value={tabBorderRightColor}
+                                    onChange={(value) => setAttributes({ tabBorderRightColor: value })}
+                                />
+
+                                <UnitInputControl
+                                    label={__('Bottom Border Width')}
+                                    value={tabBorderBottomWidth}
+                                    unit={tabBorderBottomWidthUnit}
+                                    onChangeValue={(val) => setAttributes({ tabBorderBottomWidth: val })}
+                                    onChangeUnit={(unit) => setAttributes({ tabBorderBottomWidthUnit: unit })}
+                                />
+                                <ColorPickerCircle
+                                    label={__('Bottom Border Colour')}
+                                    value={tabBorderBottomColor}
+                                    onChange={(value) => setAttributes({ tabBorderBottomColor: value })}
+                                />
+
+                                <UnitInputControl
+                                    label={__('Left Border Width')}
+                                    value={tabBorderLeftWidth}
+                                    unit={tabBorderLeftWidthUnit}
+                                    onChangeValue={(val) => setAttributes({ tabBorderLeftWidth: val })}
+                                    onChangeUnit={(unit) => setAttributes({ tabBorderLeftWidthUnit: unit })}
+                                />
+                                <ColorPickerCircle
+                                    label={__('Left Border Colour')}
+                                    value={tabBorderLeftColor}
+                                    onChange={(value) => setAttributes({ tabBorderLeftColor: value })}
+                                />
+                            </>
+                        )}
+
+                        {/* Border radius */}
+                        <UnitInputControl
+                            label={__('Border Radius')}
+                            value={tabBorderRadius}
+                            unit={tabBorderRadiusUnit}
+                            onChangeValue={(val) => setAttributes({ tabBorderRadius: val })}
+                            onChangeUnit={(unit) => setAttributes({ tabBorderRadiusUnit: unit })}
+                        />
+
                         <div style={{ marginTop: '1em' }}>
                             <label>{__('Arrow Background')}</label>
                             <div style={{ display: 'flex', gap: '20px' }}>
@@ -232,13 +467,14 @@ registerBlockType('rs/timeline-slider', {
                             </div>
                         </div>
                     </PanelBody>
-                    <PanelBody title={__('Typography')}>
+
+                    <PanelBody title={__('Typography')} initialOpen={false}>
                         <SelectControl
                             label={__('Tab Font Family')}
                             value={attributes.tabFontFamily}
                             options={[
-                                { label: 'Body Font', value: 'body' },
-                                { label: 'Heading Font', value: 'heading' },
+                                { label: 'Body Font Family', value: 'body' },
+                                { label: 'Heading Font Family', value: 'heading' },
                             ]}
                             onChange={(value) => setAttributes({ tabFontFamily: value })}
                         />
@@ -294,9 +530,35 @@ registerBlockType('rs/timeline-slider', {
                             )}
                         </DropdownMenu>
                     </ToolbarGroup>
+                    <ToolbarGroup>
+                        <ToolbarButton
+                            icon="arrow-left-alt"
+                            label="Previous Slide"
+                            onClick={() => goToSlide(Math.max(clampedIndex - 1, 0))}
+                            disabled={clampedIndex === 0}
+                        />
+                        <ToolbarButton
+                            icon="arrow-right-alt"
+                            label="Next Slide"
+                            onClick={() => goToSlide(Math.min(clampedIndex + 1, innerBlocks.length - 1))}
+                            disabled={clampedIndex === innerBlocks.length - 1}
+                        />
+                    </ToolbarGroup>
                 </BlockControls>
 
-                <div {...blockProps}>
+                <div className="tabs">
+                    {innerBlocks.map((block, index) => (
+                    <button
+                        key={block.clientId}
+                        className={index === clampedIndex ? 'active' : ''}
+                        onClick={() => goToSlide(index)}
+                    >
+                        {`Slide ${index + 1}`}
+                    </button>
+                    ))}
+                </div>
+
+                <div {...useBlockProps({ className: `timeline-slider-editor active-slide-${clampedIndex}` })}>
                     <div className="wp-block-group__inner-container">
                         <InnerBlocks
                             allowedBlocks={ALLOWED_BLOCKS}
@@ -313,7 +575,7 @@ registerBlockType('rs/timeline-slider', {
         const { innerContentWidth, blockId } = attributes;
 
         const blockProps = useBlockProps.save({
-            className: `timeline-slider ${blockId}`,
+            className: `timeline-slider ${blockId} active-slide-${clampedIndex}`,
             'data-slider': 'true',
         });
 
