@@ -34,16 +34,15 @@
 
   .tabs button {
     flex-grow: 1;
+    max-width: 33.33%;
     padding: 0.5rem 1rem;
     background-color: var(--rs-slider-tab-background, transparent);
     border-style: solid;
-    /* Individual border widths fallback to combined width */
     border-top-width: var(--rs-slider-tab-border-top-width, var(--rs-slider-tab-border-width, 0));
     border-right-width: var(--rs-slider-tab-border-right-width, var(--rs-slider-tab-border-width, 0));
     border-bottom-width: var(--rs-slider-tab-border-bottom-width, var(--rs-slider-tab-border-width, 0));
     border-left-width: var(--rs-slider-tab-border-left-width, var(--rs-slider-tab-border-width, 0));
 
-    /* Border colours with fallback checkerboard for unset */
     border-top-color: var(--rs-slider-tab-border-top-color, var(--rs-slider-tab-border-color, repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px));
     border-right-color: var(--rs-slider-tab-border-right-color, var(--rs-slider-tab-border-color, repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px));
     border-bottom-color: var(--rs-slider-tab-border-bottom-color, var(--rs-slider-tab-border-color, repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px));
@@ -55,7 +54,6 @@
     font-size: var(--rs-slider-tab-font-size, 1rem);
     cursor: pointer;
     transition: background-color 0.3s ease;
-    max-width: 33.33%;
 
     &:hover {
       background-color: var(--rs-slider-tab-background-hover, transparent);
@@ -63,8 +61,8 @@
   }
 
   .content {
-    padding: 1rem;
     position: relative;
+    padding: 1rem;
     height: auto;
     transition: height 0.3s ease;
   }
@@ -74,8 +72,8 @@
     inset: 0;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
     pointer-events: none;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
 
     &.active {
       opacity: 1;
@@ -90,26 +88,26 @@
     justify-content: space-between;
     margin-top: 1rem;
     padding: 0 1rem;
-  }
 
-  .nav-arrows button {
-    background-color: var(--rs-slider-arrow-background, transparent);
-    color: var(--rs-slider-arrow-text, currentColor);
-    border: none;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    cursor: pointer;
-    border-radius: 10px;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    button {
+      background-color: var(--rs-slider-arrow-background, transparent);
+      color: var(--rs-slider-arrow-text, currentColor);
+      border: none;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: background-color 0.3s ease, color 0.3s ease;
 
-    &:disabled {
-      opacity: 0.8;
-      cursor: not-allowed;
-    }
+      &:disabled {
+        opacity: 0.8;
+        cursor: not-allowed;
+      }
 
-    &:hover:not(:disabled) {
-      background-color: var(--rs-slider-arrow-background-hover, transparent);
-      color: var(--rs-slider-arrow-text-hover, currentColor);
+      &:hover:not(:disabled) {
+        background-color: var(--rs-slider-arrow-background-hover, transparent);
+        color: var(--rs-slider-arrow-text-hover, currentColor);
+      }
     }
   }
 }

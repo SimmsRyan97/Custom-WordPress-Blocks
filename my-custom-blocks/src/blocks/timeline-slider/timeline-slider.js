@@ -117,7 +117,6 @@ const UnitInputControl = ({ label, value, unit, onChangeValue, onChangeUnit }) =
         <label style={{ fontWeight: '600', display: 'block', marginBottom: '0.25em' }}>{label}</label>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
             <TextControl
-                __nextHasNoMarginBottom
                 value={value}
                 onChange={onChangeValue}
                 type="number"
@@ -173,7 +172,7 @@ registerBlockType('rs/timeline-slider', {
     icon: 'schedule',
     category: 'layout',
     attributes: {
-        activeSlideIndex: { type: 'number' },
+        activeSlideIndex: { type: 'number', default: 1 },
         align: { type: 'string' },
         innerContentWidth: { type: 'boolean', default: false },
         background: { type: 'string', default: '' },
@@ -257,32 +256,32 @@ registerBlockType('rs/timeline-slider', {
             let styleTag = document.getElementById(styleId);
 
             // Compose CSS variable values with units
-            const cssVars = {
-                ...buildStyleVars(attributes),
-
-                // Override border widths with units
-                ...(useIndividualBorders
+            const getAllStyleVars = (attributes) => {
+                const baseVars = buildStyleVars(attributes);
+                const borderVars = attributes.useIndividualBorders
                     ? {
-                        [`${VAR_PREFIX}tab-border-top-width`]: formatValueWithUnit(tabBorderTopWidth, tabBorderTopWidthUnit || 'px'),
-                        [`${VAR_PREFIX}tab-border-right-width`]: formatValueWithUnit(tabBorderRightWidth, tabBorderRightWidthUnit || 'px'),
-                        [`${VAR_PREFIX}tab-border-bottom-width`]: formatValueWithUnit(tabBorderBottomWidth, tabBorderBottomWidthUnit || 'px'),
-                        [`${VAR_PREFIX}tab-border-left-width`]: formatValueWithUnit(tabBorderLeftWidth, tabBorderLeftWidthUnit || 'px'),
-                    }
+                            [`${VAR_PREFIX}tab-border-top-width`]: formatValueWithUnit(attributes.tabBorderTopWidth, attributes.tabBorderTopWidthUnit),
+                            [`${VAR_PREFIX}tab-border-right-width`]: formatValueWithUnit(attributes.tabBorderRightWidth, attributes.tabBorderRightWidthUnit),
+                            [`${VAR_PREFIX}tab-border-bottom-width`]: formatValueWithUnit(attributes.tabBorderBottomWidth, attributes.tabBorderBottomWidthUnit),
+                            [`${VAR_PREFIX}tab-border-left-width`]: formatValueWithUnit(attributes.tabBorderLeftWidth, attributes.tabBorderLeftWidthUnit),
+                        }
                     : {
-                        [`${VAR_PREFIX}tab-border-width`]: formatValueWithUnit(tabBorderWidth, tabBorderWidthUnit || 'px'),
-                    }
-                ),
+                            [`${VAR_PREFIX}tab-border-width`]: formatValueWithUnit(attributes.tabBorderWidth, attributes.tabBorderWidthUnit),
+                        };
 
-                // Border radius with unit
-                [`${VAR_PREFIX}tab-border-radius`]: formatValueWithUnit(tabBorderRadius, tabBorderRadiusUnit || 'px'),
+                return {
+                    ...baseVars,
+                    ...borderVars,
+                    [`${VAR_PREFIX}tab-border-radius`]: formatValueWithUnit(attributes.tabBorderRadius, attributes.tabBorderRadiusUnit),
+                };
             };
 
-            const filteredCssVars = Object.entries(cssVars)
-                .filter(([, value]) => value !== undefined && value !== '')
-                .map(([key, value]) => `${key}: ${value};`)
+            const cssVars = Object.entries(getAllStyleVars(attributes))
+                .filter(([, val]) => val !== undefined && val !== '')
+                .map(([key, val]) => `${key}: ${val};`)
                 .join('\n');
 
-            const css = `.${attributes.blockId} {\n${filteredCssVars}\n}`;
+            const css = `.${attributes.blockId} {\n${cssVars}\n}`;
 
             if (!styleTag) {
                 styleTag = document.createElement('style');
@@ -546,18 +545,6 @@ registerBlockType('rs/timeline-slider', {
                     </ToolbarGroup>
                 </BlockControls>
 
-                <div className="tabs">
-                    {innerBlocks.map((block, index) => (
-                    <button
-                        key={block.clientId}
-                        className={index === clampedIndex ? 'active' : ''}
-                        onClick={() => goToSlide(index)}
-                    >
-                        {`Slide ${index + 1}`}
-                    </button>
-                    ))}
-                </div>
-
                 <div {...useBlockProps({ className: `timeline-slider-editor active-slide-${clampedIndex}` })}>
                     <div className="wp-block-group__inner-container">
                         <InnerBlocks
@@ -572,17 +559,17 @@ registerBlockType('rs/timeline-slider', {
         );
     },
     save({ attributes }) {
-        const { innerContentWidth, blockId } = attributes;
+        const { innerContentWidth, blockId, clampedIndex } = attributes;
 
         const blockProps = useBlockProps.save({
             className: `timeline-slider ${blockId} active-slide-${clampedIndex}`,
             'data-slider': 'true',
         });
 
-        const cssVars = Object.entries(buildStyleVars(attributes))
-            .filter(([, val]) => val !== undefined && val !== '')
-            .map(([key, val]) => `${key}: ${val};`)
-            .join('\n');
+    const cssVars = Object.entries(getAllStyleVars(attributes))
+        .filter(([, val]) => val !== undefined && val !== '')
+        .map(([key, val]) => `${key}: ${val};`)
+        .join('\n');
 
         const styleTag = (
             <style
