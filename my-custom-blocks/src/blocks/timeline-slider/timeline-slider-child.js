@@ -22,8 +22,11 @@ registerBlockType('rs/timeline-slider-child', {
             type: 'string',
             default: '',
         },
-            slideId: {
+        slideId: {
             type: 'string',
+        },
+        slideIndex: {
+            type: 'number',
         },
     },
     edit({ attributes, setAttributes, clientId }) {
@@ -51,7 +54,11 @@ registerBlockType('rs/timeline-slider-child', {
                         />
                     </PanelBody>
                 </InspectorControls>
-                <div {...blockProps} data-slide-id={slideId} className="slide-editor">
+                <div
+                    {...blockProps}
+                    data-slide-id={slideId}
+                    className={`slide-editor slide-${attributes.slideIndex || 0}`}
+                >
                     <InnerBlocks />
                 </div>
             </>
@@ -59,8 +66,12 @@ registerBlockType('rs/timeline-slider-child', {
     },
     save({ attributes }) {
         return (
-            <div className="slide" data-slide-id={attributes.slideId} data-title={attributes.title}>
-                <InnerBlocks.Content />
+            <div
+            className={`slide slide-${attributes.slideIndex || 0}`}
+            data-slide-id={attributes.slideId}
+            data-title={attributes.title}
+            >
+            <InnerBlocks.Content />
             </div>
         );
     },

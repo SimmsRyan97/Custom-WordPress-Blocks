@@ -78,6 +78,11 @@
         }
       }
     }
+
+    /* Hide all child slides by default */
+    .block-editor-block-list__block.rs-timeline-slider-child {
+      display: none;
+    }
   }
 
   /* Child slide block editor wrapper */
