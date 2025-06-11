@@ -178,10 +178,6 @@ registerBlockType("rs/bar-chart", {
                           value={barTwoColour}
                           onChange={(val) => setAttributes({ barTwoColour: val })}
                         />
-                        <ColorPicker
-                          color={barTwoColour}
-                          onChange={(val) => setAttributes({ barTwoColour: val })}
-                        />
                       </PanelBody>
 
                       <PanelBody title="Title Text Styling">

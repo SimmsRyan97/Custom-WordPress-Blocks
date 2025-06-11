@@ -1,6 +1,12 @@
 import { __ } from "@wordpress/i18n";
-import { registerBlockType, createBlock } from '@wordpress/blocks';
-import { useBlockProps, InnerBlocks, BlockControls, InspectorControls, insertBlocks } from '@wordpress/block-editor';
+import { registerBlockType, createBlock } from "@wordpress/blocks";
+import {
+  useBlockProps,
+  InnerBlocks,
+  BlockControls,
+  InspectorControls,
+  insertBlocks,
+} from "@wordpress/block-editor";
 import {
   PanelBody,
   ToggleControl,
@@ -8,40 +14,46 @@ import {
   ToolbarButton,
   DropdownMenu,
   SelectControl,
-} from '@wordpress/components';
-import { plus, chevronDown } from '@wordpress/icons';
-import { useSelect, dispatch } from '@wordpress/data';
-import { useEffect, useRef } from '@wordpress/element';
+} from "@wordpress/components";
+import { plus, chevronDown } from "@wordpress/icons";
+import { useSelect, dispatch } from "@wordpress/data";
+import { useEffect, useRef } from "@wordpress/element";
 import {
   fontSizeMap,
   ColorPickerCircle,
   UnitInputControl,
   formatValueWithUnit,
-} from '../../helper.js';
-import './editor.scss';
-import './style.scss';
+} from "../../helper.js";
+import "./editor.scss";
+import "./style.scss";
 
-const VAR_PREFIX = '--rs-slider-';
-const ALLOWED_BLOCKS = ['rs/timeline-slider-child'];
+const VAR_PREFIX = "--rs-slider-";
+const ALLOWED_BLOCKS = ["rs/timeline-slider-child"];
 
 const buildStyleVars = (attributes) => ({
   [`${VAR_PREFIX}background`]: attributes.background || undefined,
   [`${VAR_PREFIX}tab-background`]: attributes.tabBackground || undefined,
-  [`${VAR_PREFIX}tab-background-hover`]: attributes.tabBackgroundHover || undefined,
+  [`${VAR_PREFIX}tab-background-hover`]:
+    attributes.tabBackgroundHover || undefined,
   [`${VAR_PREFIX}arrow-background`]: attributes.arrowBackground || undefined,
-  [`${VAR_PREFIX}arrow-background-hover`]: attributes.arrowBackgroundHover || undefined,
+  [`${VAR_PREFIX}arrow-background-hover`]:
+    attributes.arrowBackgroundHover || undefined,
   [`${VAR_PREFIX}arrow-text`]: attributes.arrowText || undefined,
   [`${VAR_PREFIX}arrow-text-hover`]: attributes.arrowTextHover || undefined,
   [`${VAR_PREFIX}tab-font-family`]:
-    attributes.tabFontFamily === 'heading'
-      ? 'var(--global-heading-font-family)'
-      : 'var(--global-body-font-family)',
+    attributes.tabFontFamily === "heading"
+      ? "var(--global-heading-font-family)"
+      : "var(--global-body-font-family)",
   ...(attributes.useIndividualBorders
     ? {
-        [`${VAR_PREFIX}tab-border-top-color`]: attributes.tabBorderTopColor || undefined,
-        [`${VAR_PREFIX}tab-border-right-color`]: attributes.tabBorderRightColor || undefined,
-        [`${VAR_PREFIX}tab-border-bottom-color`]: attributes.tabBorderBottomColor || undefined,
-        [`${VAR_PREFIX}tab-border-left-color`]: attributes.tabBorderLeftColor || undefined,
+        [`${VAR_PREFIX}tab-border-top-color`]:
+          attributes.tabBorderTopColor || undefined,
+        [`${VAR_PREFIX}tab-border-right-color`]:
+          attributes.tabBorderRightColor || undefined,
+        [`${VAR_PREFIX}tab-border-bottom-color`]:
+          attributes.tabBorderBottomColor || undefined,
+        [`${VAR_PREFIX}tab-border-left-color`]:
+          attributes.tabBorderLeftColor || undefined,
         [`${VAR_PREFIX}tab-border-top-width`]: formatValueWithUnit(
           attributes.tabBorderTopWidth,
           attributes.tabBorderTopWidthUnit
@@ -60,7 +72,8 @@ const buildStyleVars = (attributes) => ({
         ),
       }
     : {
-        [`${VAR_PREFIX}tab-border-color`]: attributes.tabBorderColor || undefined,
+        [`${VAR_PREFIX}tab-border-color`]:
+          attributes.tabBorderColor || undefined,
         [`${VAR_PREFIX}tab-border-width`]: formatValueWithUnit(
           attributes.tabBorderWidth,
           attributes.tabBorderWidthUnit
@@ -70,48 +83,49 @@ const buildStyleVars = (attributes) => ({
     attributes.tabBorderRadius,
     attributes.tabBorderRadiusUnit
   ),
-  [`${VAR_PREFIX}tab-font-size`]: fontSizeMap[attributes.tabFontSize] || undefined,
+  [`${VAR_PREFIX}tab-font-size`]:
+    fontSizeMap[attributes.tabFontSize] || undefined,
 });
 
-registerBlockType('rs/timeline-slider', {
-  title: 'Timeline Slider',
-  icon: 'schedule',
-  category: 'layout',
+registerBlockType("rs/timeline-slider", {
+  title: "Timeline Slider",
+  icon: "schedule",
+  category: "widgets",
   attributes: {
-    activeSlideIndex: { type: 'number', default: 1 },
-    align: { type: 'string' },
-    innerContentWidth: { type: 'boolean', default: false },
-    background: { type: 'string', default: '' },
-    tabBackground: { type: 'string', default: '' },
-    tabBackgroundHover: { type: 'string', default: '' },
-    tabFontFamily: { type: 'string', default: 'heading' },
-    tabFontSize: { type: 'string', default: 'md' },
-    useIndividualBorders: { type: 'boolean', default: false },
-    tabBorderTopWidth: { type: 'string', default: '' },
-    tabBorderRightWidth: { type: 'string', default: '' },
-    tabBorderBottomWidth: { type: 'string', default: '' },
-    tabBorderLeftWidth: { type: 'string', default: '' },
-    tabBorderTopWidthUnit: { type: 'string', default: 'px' },
-    tabBorderRightWidthUnit: { type: 'string', default: 'px' },
-    tabBorderBottomWidthUnit: { type: 'string', default: 'px' },
-    tabBorderLeftWidthUnit: { type: 'string', default: 'px' },
-    tabBorderTopColor: { type: 'string', default: '' },
-    tabBorderRightColor: { type: 'string', default: '' },
-    tabBorderBottomColor: { type: 'string', default: '' },
-    tabBorderLeftColor: { type: 'string', default: '' },
-    tabBorderColor: { type: 'string', default: '' },
-    tabBorderWidth: { type: 'string', default: '' },
-    tabBorderWidthUnit: { type: 'string', default: 'px' },
-    tabBorderRadius: { type: 'string', default: '' },
-    tabBorderRadiusUnit: { type: 'string', default: 'px' },
-    arrowBackground: { type: 'string', default: '' },
-    arrowBackgroundHover: { type: 'string', default: '' },
-    arrowText: { type: 'string', default: '' },
-    arrowTextHover: { type: 'string', default: '' },
-    blockId: { type: 'string' },
+    activeSlideIndex: { type: "number", default: 1 },
+    align: { type: "string" },
+    innerContentWidth: { type: "boolean", default: false },
+    background: { type: "string", default: "" },
+    tabBackground: { type: "string", default: "" },
+    tabBackgroundHover: { type: "string", default: "" },
+    tabFontFamily: { type: "string", default: "heading" },
+    tabFontSize: { type: "string", default: "md" },
+    useIndividualBorders: { type: "boolean", default: false },
+    tabBorderTopWidth: { type: "string", default: "" },
+    tabBorderRightWidth: { type: "string", default: "" },
+    tabBorderBottomWidth: { type: "string", default: "" },
+    tabBorderLeftWidth: { type: "string", default: "" },
+    tabBorderTopWidthUnit: { type: "string", default: "px" },
+    tabBorderRightWidthUnit: { type: "string", default: "px" },
+    tabBorderBottomWidthUnit: { type: "string", default: "px" },
+    tabBorderLeftWidthUnit: { type: "string", default: "px" },
+    tabBorderTopColor: { type: "string", default: "" },
+    tabBorderRightColor: { type: "string", default: "" },
+    tabBorderBottomColor: { type: "string", default: "" },
+    tabBorderLeftColor: { type: "string", default: "" },
+    tabBorderColor: { type: "string", default: "" },
+    tabBorderWidth: { type: "string", default: "" },
+    tabBorderWidthUnit: { type: "string", default: "px" },
+    tabBorderRadius: { type: "string", default: "" },
+    tabBorderRadiusUnit: { type: "string", default: "px" },
+    arrowBackground: { type: "string", default: "" },
+    arrowBackgroundHover: { type: "string", default: "" },
+    arrowText: { type: "string", default: "" },
+    arrowTextHover: { type: "string", default: "" },
+    blockId: { type: "string" },
   },
   supports: {
-    align: ['wide', 'full', 'center'],
+    align: ["wide", "full", "center"],
     anchor: true,
     spacing: { margin: true, padding: true },
     __experimentalLayout: true,
@@ -153,7 +167,7 @@ registerBlockType('rs/timeline-slider', {
 
     // Select inner blocks for slides
     const innerBlocks = useSelect(
-      (select) => select('core/block-editor').getBlocks(clientId),
+      (select) => select("core/block-editor").getBlocks(clientId),
       [clientId]
     );
 
@@ -163,26 +177,28 @@ registerBlockType('rs/timeline-slider', {
     const clampedIndex = Math.min(activeSlideIndex, innerBlocks.length - 1);
 
     const blockProps = useBlockProps({
-      className: `timeline-slider-editor ${attributes.blockId || ''}`,
+      className: `timeline-slider-editor ${attributes.blockId || ""}`,
       style: {
-        [`${VAR_PREFIX}tab-background`]: tabBackground || '#eee',
-        [`${VAR_PREFIX}tab-background-hover`]: tabBackgroundHover || '#ddd',
-        [`${VAR_PREFIX}tab-font-size`]: fontSizeMap[tabFontSize] || '1rem',
+        [`${VAR_PREFIX}tab-background`]: tabBackground || "#eee",
+        [`${VAR_PREFIX}tab-background-hover`]: tabBackgroundHover || "#ddd",
+        [`${VAR_PREFIX}tab-font-size`]: fontSizeMap[tabFontSize] || "1rem",
         [`${VAR_PREFIX}tab-font-family`]:
-          tabFontFamily === 'heading'
-            ? 'var(--global-heading-font-family)'
-            : 'var(--global-body-font-family)',
-        [`${VAR_PREFIX}tab-border-width`]: formatValueWithUnit(tabBorderWidth, tabBorderWidthUnit) || '0px',
-        [`${VAR_PREFIX}tab-border-color`]: tabBorderColor || 'transparent',
-        [`${VAR_PREFIX}tab-border-radius`]: formatValueWithUnit(tabBorderRadius, tabBorderRadiusUnit) || '0px',
-        [`${VAR_PREFIX}arrow-background`]: arrowBackground || '#eee',
-        [`${VAR_PREFIX}arrow-background-hover`]: arrowBackgroundHover || '#ddd',
-        [`${VAR_PREFIX}arrow-text`]: arrowText || '#333',
-        [`${VAR_PREFIX}arrow-text-hover`]: arrowTextHover || '#000',
-        [`${VAR_PREFIX}background`]: background || 'transparent',
+          tabFontFamily === "heading"
+            ? "var(--global-heading-font-family)"
+            : "var(--global-body-font-family)",
+        [`${VAR_PREFIX}tab-border-width`]:
+          formatValueWithUnit(tabBorderWidth, tabBorderWidthUnit) || "0px",
+        [`${VAR_PREFIX}tab-border-color`]: tabBorderColor || "transparent",
+        [`${VAR_PREFIX}tab-border-radius`]:
+          formatValueWithUnit(tabBorderRadius, tabBorderRadiusUnit) || "0px",
+        [`${VAR_PREFIX}arrow-background`]: arrowBackground || "#eee",
+        [`${VAR_PREFIX}arrow-background-hover`]: arrowBackgroundHover || "#ddd",
+        [`${VAR_PREFIX}arrow-text`]: arrowText || "#333",
+        [`${VAR_PREFIX}arrow-text-hover`]: arrowTextHover || "#000",
+        [`${VAR_PREFIX}background`]: background || "transparent",
         [`${VAR_PREFIX}active-slide`]: activeSlideIndex || 1,
       },
-      'data-active-slide': activeSlideIndex || 1,
+      "data-active-slide": activeSlideIndex || 1,
     });
 
     // Set blockId once on mount
@@ -238,15 +254,15 @@ registerBlockType('rs/timeline-slider', {
       };
 
       const cssVars = Object.entries(getAllStyleVars(attributes))
-        .filter(([, val]) => val !== undefined && val !== '')
+        .filter(([, val]) => val !== undefined && val !== "")
         .map(([key, val]) => `${key}: ${val};`)
-        .join('\n');
+        .join("\n");
 
-      const safeBlockId = attributes.blockId.replace(/[^a-zA-Z0-9_-]/g, '');
+      const safeBlockId = attributes.blockId.replace(/[^a-zA-Z0-9_-]/g, "");
       const css = `.${safeBlockId} {\n${cssVars}\n}`;
 
       if (!styleTag) {
-        styleTag = document.createElement('style');
+        styleTag = document.createElement("style");
         styleTag.id = styleId;
         document.head.appendChild(styleTag);
       }
@@ -275,14 +291,17 @@ registerBlockType('rs/timeline-slider', {
 
     // Auto add first child slide if none exist
     useEffect(() => {
-        if (clientId && innerBlocks.length === 0 && !hasInsertedInitialBlock.current) {
-            const firstChild = createBlock('rs/timeline-slider-child');
-            dispatch('core/block-editor').insertBlocks(firstChild, 0, clientId);
-            hasInsertedInitialBlock.current = true; // Mark as inserted so no repeat
-        }
-        if (innerBlocks.length > 0) {
-            hasInsertedInitialBlock.current = false; // Reset if user deletes all and re-adds manually
-        }
+      if (
+        clientId &&
+        innerBlocks.length === 0 &&
+        !hasInsertedInitialBlock.current
+      ) {
+        setTimeout(() => {
+          const firstChild = createBlock("rs/timeline-slider-child");
+          dispatch("core/block-editor").insertBlocks(firstChild, 0, clientId);
+          hasInsertedInitialBlock.current = true;
+        }, 0);
+      }
     }, [clientId, innerBlocks.length]);
 
     const goToSlide = (index) => {
@@ -292,48 +311,57 @@ registerBlockType('rs/timeline-slider', {
     return (
       <>
         <InspectorControls>
-          <PanelBody title={__('Styles')} initialOpen={true}>
+          <PanelBody
+            title={__("Styles")}
+            initialOpen={true}
+            style={{ display: "grid", gap: "1em" }}
+          >
             <ColorPickerCircle
-              label={__('Block Background')}
+              label={__("Block Background")}
               value={background}
               onChange={(value) => setAttributes({ background: value })}
             />
-            <div style={{ marginTop: '1em' }}>
-              <label>{__('Tab Background')}</label>
-              <div style={{ display: 'flex', gap: '20px' }}>
+            <div>
+              <label>{__("Tab Background")}</label>
+              <div style={{ display: "flex", gap: "20px" }}>
                 <ColorPickerCircle
-                  label={__('Normal')}
+                  label={__("Normal")}
                   value={tabBackground}
                   onChange={(value) => setAttributes({ tabBackground: value })}
                 />
                 <ColorPickerCircle
-                  label={__('Hover')}
+                  label={__("Hover")}
                   value={tabBackgroundHover}
-                  onChange={(value) => setAttributes({ tabBackgroundHover: value })}
+                  onChange={(value) =>
+                    setAttributes({ tabBackgroundHover: value })
+                  }
                 />
               </div>
             </div>
 
             <ToggleControl
-              label={__('Use Individual Borders')}
+              label={__("Use Individual Borders")}
               checked={useIndividualBorders}
               onChange={(val) => setAttributes({ useIndividualBorders: val })}
-              style={{ marginTop: '1em' }}
             />
 
             {!useIndividualBorders && (
               <>
                 <ColorPickerCircle
-                  label={__('Tab Border Colour')}
+                  label={__("Tab Border Colour")}
                   value={tabBorderColor}
                   onChange={(value) => setAttributes({ tabBorderColor: value })}
                 />
                 <UnitInputControl
-                  label={__('Border Width')}
+                  label={__("Border Width")}
                   value={tabBorderWidth}
                   unit={tabBorderWidthUnit}
-                  onChangeValue={(val) => setAttributes({ tabBorderWidth: val })}
-                  onChangeUnit={(unit) => setAttributes({ tabBorderWidthUnit: unit })}
+                  onChangeValue={(val) =>
+                    setAttributes({ tabBorderWidth: val })
+                  }
+                  onChangeUnit={(unit) =>
+                    setAttributes({ tabBorderWidthUnit: unit })
+                  }
                 />
               </>
             )}
@@ -341,93 +369,123 @@ registerBlockType('rs/timeline-slider', {
             {useIndividualBorders && (
               <>
                 <UnitInputControl
-                  label={__('Top Border Width')}
+                  label={__("Top Border Width")}
                   value={tabBorderTopWidth}
                   unit={tabBorderTopWidthUnit}
-                  onChangeValue={(val) => setAttributes({ tabBorderTopWidth: val })}
-                  onChangeUnit={(unit) => setAttributes({ tabBorderTopWidthUnit: unit })}
+                  onChangeValue={(val) =>
+                    setAttributes({ tabBorderTopWidth: val })
+                  }
+                  onChangeUnit={(unit) =>
+                    setAttributes({ tabBorderTopWidthUnit: unit })
+                  }
                 />
                 <ColorPickerCircle
-                  label={__('Top Border Colour')}
+                  label={__("Top Border Colour")}
                   value={tabBorderTopColor}
-                  onChange={(value) => setAttributes({ tabBorderTopColor: value })}
+                  onChange={(value) =>
+                    setAttributes({ tabBorderTopColor: value })
+                  }
                 />
 
                 <UnitInputControl
-                  label={__('Right Border Width')}
+                  label={__("Right Border Width")}
                   value={tabBorderRightWidth}
                   unit={tabBorderRightWidthUnit}
-                  onChangeValue={(val) => setAttributes({ tabBorderRightWidth: val })}
-                  onChangeUnit={(unit) => setAttributes({ tabBorderRightWidthUnit: unit })}
+                  onChangeValue={(val) =>
+                    setAttributes({ tabBorderRightWidth: val })
+                  }
+                  onChangeUnit={(unit) =>
+                    setAttributes({ tabBorderRightWidthUnit: unit })
+                  }
                 />
                 <ColorPickerCircle
-                  label={__('Right Border Colour')}
+                  label={__("Right Border Colour")}
                   value={tabBorderRightColor}
-                  onChange={(value) => setAttributes({ tabBorderRightColor: value })}
+                  onChange={(value) =>
+                    setAttributes({ tabBorderRightColor: value })
+                  }
                 />
 
                 <UnitInputControl
-                  label={__('Bottom Border Width')}
+                  label={__("Bottom Border Width")}
                   value={tabBorderBottomWidth}
                   unit={tabBorderBottomWidthUnit}
-                  onChangeValue={(val) => setAttributes({ tabBorderBottomWidth: val })}
-                  onChangeUnit={(unit) => setAttributes({ tabBorderBottomWidthUnit: unit })}
+                  onChangeValue={(val) =>
+                    setAttributes({ tabBorderBottomWidth: val })
+                  }
+                  onChangeUnit={(unit) =>
+                    setAttributes({ tabBorderBottomWidthUnit: unit })
+                  }
                 />
                 <ColorPickerCircle
-                  label={__('Bottom Border Colour')}
+                  label={__("Bottom Border Colour")}
                   value={tabBorderBottomColor}
-                  onChange={(value) => setAttributes({ tabBorderBottomColor: value })}
+                  onChange={(value) =>
+                    setAttributes({ tabBorderBottomColor: value })
+                  }
                 />
 
                 <UnitInputControl
-                  label={__('Left Border Width')}
+                  label={__("Left Border Width")}
                   value={tabBorderLeftWidth}
                   unit={tabBorderLeftWidthUnit}
-                  onChangeValue={(val) => setAttributes({ tabBorderLeftWidth: val })}
-                  onChangeUnit={(unit) => setAttributes({ tabBorderLeftWidthUnit: unit })}
+                  onChangeValue={(val) =>
+                    setAttributes({ tabBorderLeftWidth: val })
+                  }
+                  onChangeUnit={(unit) =>
+                    setAttributes({ tabBorderLeftWidthUnit: unit })
+                  }
                 />
                 <ColorPickerCircle
-                  label={__('Left Border Colour')}
+                  label={__("Left Border Colour")}
                   value={tabBorderLeftColor}
-                  onChange={(value) => setAttributes({ tabBorderLeftColor: value })}
+                  onChange={(value) =>
+                    setAttributes({ tabBorderLeftColor: value })
+                  }
                 />
               </>
             )}
 
             <UnitInputControl
-              label={__('Border Radius')}
+              label={__("Border Radius")}
               value={tabBorderRadius}
               unit={tabBorderRadiusUnit}
               onChangeValue={(val) => setAttributes({ tabBorderRadius: val })}
-              onChangeUnit={(unit) => setAttributes({ tabBorderRadiusUnit: unit })}
+              onChangeUnit={(unit) =>
+                setAttributes({ tabBorderRadiusUnit: unit })
+              }
             />
 
-            <div style={{ marginTop: '1em' }}>
-              <label>{__('Arrow Background')}</label>
-              <div style={{ display: 'flex', gap: '20px' }}>
+            <div>
+              <label>{__("Arrow Background")}</label>
+              <div style={{ display: "flex", gap: "20px" }}>
                 <ColorPickerCircle
-                  label={__('Normal')}
+                  label={__("Normal")}
                   value={arrowBackground}
-                  onChange={(value) => setAttributes({ arrowBackground: value })}
+                  onChange={(value) =>
+                    setAttributes({ arrowBackground: value })
+                  }
                 />
                 <ColorPickerCircle
-                  label={__('Hover')}
+                  label={__("Hover")}
                   value={arrowBackgroundHover}
-                  onChange={(value) => setAttributes({ arrowBackgroundHover: value })}
+                  onChange={(value) =>
+                    setAttributes({ arrowBackgroundHover: value })
+                  }
                 />
               </div>
             </div>
 
-            <div style={{ marginTop: '1em' }}>
-              <label>{__('Arrow Text')}</label>
-              <div style={{ display: 'flex', gap: '20px' }}>
+            <div>
+              <label>{__("Arrow Text")}</label>
+              <div style={{ display: "flex", gap: "20px" }}>
                 <ColorPickerCircle
-                  label={__('Normal')}
+                  label={__("Normal")}
                   value={arrowText}
                   onChange={(value) => setAttributes({ arrowText: value })}
                 />
                 <ColorPickerCircle
-                  label={__('Hover')}
+                  label={__("Hover")}
                   value={arrowTextHover}
                   onChange={(value) => setAttributes({ arrowTextHover: value })}
                 />
@@ -435,26 +493,26 @@ registerBlockType('rs/timeline-slider', {
             </div>
           </PanelBody>
 
-          <PanelBody title={__('Typography')} initialOpen={false}>
+          <PanelBody title={__("Typography")} initialOpen={false}>
             <SelectControl
-              label={__('Tab Font Family')}
+              label={__("Tab Font Family")}
               value={tabFontFamily}
               options={[
-                { label: 'Body Font Family', value: 'body' },
-                { label: 'Heading Font Family', value: 'heading' },
+                { label: "Body Font Family", value: "body" },
+                { label: "Heading Font Family", value: "heading" },
               ]}
               onChange={(value) => setAttributes({ tabFontFamily: value })}
             />
             <SelectControl
-              label={__('Tab Font Size')}
+              label={__("Tab Font Size")}
               value={tabFontSize}
               options={[
-                { label: 'Small', value: 'sm' },
-                { label: 'Medium', value: 'md' },
-                { label: 'Large', value: 'lg' },
-                { label: 'XL', value: 'xl' },
-                { label: '2XL', value: '2xl' },
-                { label: '3XL', value: '3xl' },
+                { label: "Small", value: "sm" },
+                { label: "Medium", value: "md" },
+                { label: "Large", value: "lg" },
+                { label: "XL", value: "xl" },
+                { label: "2XL", value: "2xl" },
+                { label: "3XL", value: "3xl" },
               ]}
               onChange={(value) => setAttributes({ tabFontSize: value })}
             />
@@ -467,24 +525,35 @@ registerBlockType('rs/timeline-slider', {
               icon={plus}
               label={__("Add Timeline Slide")}
               onClick={() => {
-                const newBlock = createBlock('rs/timeline-slider-child');
-                dispatch('core/block-editor').insertBlocks(newBlock, undefined, clientId);
+                const newBlock = createBlock("rs/timeline-slider-child");
+                dispatch("core/block-editor").insertBlocks(
+                  newBlock,
+                  undefined,
+                  clientId
+                );
               }}
               aria-label="Add a timeline slide"
             />
             <DropdownMenu
               icon={chevronDown}
               label={__("Timeline Slider Options")}
-              popoverProps={{ placement: 'bottom-start', offset: [0, 4] }}
+              popoverProps={{ placement: "bottom-start", offset: [0, 4] }}
             >
               {() => (
-                <div style={{ padding: '10px', display: 'flex', minWidth: '205px' }}>
+                <div
+                  style={{
+                    padding: "10px",
+                    display: "flex",
+                    minWidth: "205px",
+                  }}
+                >
                   <ToggleControl
                     __nextHasNoMarginBottom
                     label={__("Use Inner Content Width")}
                     checked={innerContentWidth}
-                    onChange={(value) => setAttributes({ innerContentWidth: value })}
-
+                    onChange={(value) =>
+                      setAttributes({ innerContentWidth: value })
+                    }
                   />
                 </div>
               )}
@@ -501,7 +570,9 @@ registerBlockType('rs/timeline-slider', {
             <ToolbarButton
               icon="arrow-right-alt"
               label="Next Slide"
-              onClick={() => goToSlide(Math.min(clampedIndex + 1, innerBlocks.length - 1))}
+              onClick={() =>
+                goToSlide(Math.min(clampedIndex + 1, innerBlocks.length - 1))
+              }
               disabled={clampedIndex === innerBlocks.length - 1}
             />
           </ToolbarGroup>
@@ -512,10 +583,11 @@ registerBlockType('rs/timeline-slider', {
             <div
               key={childBlock.clientId}
               className={`rs-timeline-slider-child slide-${index}`}
-              style={{ display: index === activeSlideIndex ? 'block' : 'none' }}
+              style={{ display: index === activeSlideIndex ? "block" : "none" }}
             >
               <InnerBlocks
                 templateLock={false}
+                template={[["rs/timeline-slider-child", {}]]}
                 renderAppender={() => null}
                 allowedBlocks={ALLOWED_BLOCKS}
                 __experimentalKeepTemplateProps
@@ -525,8 +597,8 @@ registerBlockType('rs/timeline-slider', {
             </div>
           ))}
           {!innerBlocks.length && (
-            <div style={{ textAlign: 'center', color: '#999' }}>
-              {__('Add timeline slides using the toolbar button above')}
+            <div style={{ textAlign: "center", color: "#999" }}>
+              {__("Add timeline slides using the toolbar button above")}
             </div>
           )}
         </div>
@@ -534,6 +606,10 @@ registerBlockType('rs/timeline-slider', {
     );
   },
   save() {
-    return <InnerBlocks.Content />;
+    return (
+      <div {...useBlockProps.save()}>
+        <InnerBlocks.Content />
+      </div>
+    );
   },
 });

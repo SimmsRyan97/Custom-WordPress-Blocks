@@ -5,6 +5,10 @@ import {
   ColorPalette,
 } from '@wordpress/components';
 
+import { useSetting } from '@wordpress/block-editor';
+
+const themeColors = useSetting( 'color.palette.theme' );
+
 // Using Kadence font map
 const fontSizeMap = {
     sm: 'var(--global-kb-font-size-sm)',
@@ -35,11 +39,11 @@ const formatValueWithUnit = (val, unit = 'px') => {
 // Colour circle with fallback & clear support
 const ColorPickerCircle = ({ value, onChange, label }) => {
     return (
-        <div>
-            <label style={{ fontWeight: '600', display: 'block', marginBottom: '0.5em', fontSize: '0.85rem' }}>{label}</label>
+        <div style={{ display: 'grid', gap: '1em' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem' }}>{label}</label>
             <DropdownMenu
                 icon={null}
-                label={label}
+                label={<strong>{label}</strong>}
                 toggleProps={{
                     style: {
                         backgroundColor: value || 'transparent',
@@ -59,6 +63,7 @@ const ColorPickerCircle = ({ value, onChange, label }) => {
                 {() => (
                     <>
                         <ColorPalette
+                            colors={themeColors}
                             value={value}
                             onChange={onChange}
                             disableCustomColors={false}
@@ -72,7 +77,7 @@ const ColorPickerCircle = ({ value, onChange, label }) => {
 
 // Unit + value input control
 const UnitInputControl = ({ label, value, unit, onChangeValue, onChangeUnit }) => (
-    <div style={{ marginBottom: '1em' }}>
+    <div>
         <label style={{ fontWeight: '600', display: 'block', marginBottom: '0.25em' }}>{label}</label>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
             <TextControl
