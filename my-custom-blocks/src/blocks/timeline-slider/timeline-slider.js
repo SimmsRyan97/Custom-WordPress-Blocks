@@ -5,7 +5,7 @@ import {
   InnerBlocks,
   BlockControls,
   InspectorControls,
-  insertBlocks,
+  store as blockEditorStore,
 } from "@wordpress/block-editor";
 import {
   PanelBody,
@@ -16,44 +16,47 @@ import {
   SelectControl,
 } from "@wordpress/components";
 import { plus, chevronDown } from "@wordpress/icons";
-import { useSelect, dispatch } from "@wordpress/data";
-import { useEffect, useRef } from "@wordpress/element";
+import { useSelect, useDispatch } from "@wordpress/data";
+import { useEffect, useMemo, useCallback } from "@wordpress/element";
 import {
   fontSizeMap,
   ColorPickerCircle,
   UnitInputControl,
   formatValueWithUnit,
-} from "../../helper.js";
+} from "../helper.js";
 import "./editor.scss";
 import "./style.scss";
 
 const VAR_PREFIX = "--rs-slider-";
 const ALLOWED_BLOCKS = ["rs/timeline-slider-child"];
 
-const buildStyleVars = (attributes) => ({
-  [`${VAR_PREFIX}background`]: attributes.background || undefined,
-  [`${VAR_PREFIX}tab-background`]: attributes.tabBackground || undefined,
-  [`${VAR_PREFIX}tab-background-hover`]:
-    attributes.tabBackgroundHover || undefined,
-  [`${VAR_PREFIX}arrow-background`]: attributes.arrowBackground || undefined,
-  [`${VAR_PREFIX}arrow-background-hover`]:
-    attributes.arrowBackgroundHover || undefined,
-  [`${VAR_PREFIX}arrow-text`]: attributes.arrowText || undefined,
-  [`${VAR_PREFIX}arrow-text-hover`]: attributes.arrowTextHover || undefined,
-  [`${VAR_PREFIX}tab-font-family`]:
-    attributes.tabFontFamily === "heading"
-      ? "var(--global-heading-font-family)"
-      : "var(--global-body-font-family)",
-  ...(attributes.useIndividualBorders
+// Memoized style variables builder
+const buildStyleVars = (attributes) => {
+  const baseVars = {
+    [`${VAR_PREFIX}background`]: attributes.background || undefined,
+    [`${VAR_PREFIX}tab-background`]: attributes.tabBackground || undefined,
+    [`${VAR_PREFIX}tab-background-hover`]: attributes.tabBackgroundHover || undefined,
+    [`${VAR_PREFIX}arrow-background`]: attributes.arrowBackground || undefined,
+    [`${VAR_PREFIX}arrow-background-hover`]: attributes.arrowBackgroundHover || undefined,
+    [`${VAR_PREFIX}arrow-text`]: attributes.arrowText || undefined,
+    [`${VAR_PREFIX}arrow-text-hover`]: attributes.arrowTextHover || undefined,
+    [`${VAR_PREFIX}tab-font-family`]: 
+      attributes.tabFontFamily === "heading" 
+        ? "var(--global-heading-font-family)" 
+        : "var(--global-body-font-family)",
+    [`${VAR_PREFIX}tab-border-radius`]: formatValueWithUnit(
+      attributes.tabBorderRadius,
+      attributes.tabBorderRadiusUnit
+    ),
+    [`${VAR_PREFIX}tab-font-size`]: fontSizeMap[attributes.tabFontSize] || undefined,
+  };
+
+  const borderVars = attributes.useIndividualBorders
     ? {
-        [`${VAR_PREFIX}tab-border-top-color`]:
-          attributes.tabBorderTopColor || undefined,
-        [`${VAR_PREFIX}tab-border-right-color`]:
-          attributes.tabBorderRightColor || undefined,
-        [`${VAR_PREFIX}tab-border-bottom-color`]:
-          attributes.tabBorderBottomColor || undefined,
-        [`${VAR_PREFIX}tab-border-left-color`]:
-          attributes.tabBorderLeftColor || undefined,
+        [`${VAR_PREFIX}tab-border-top-color`]: attributes.tabBorderTopColor || undefined,
+        [`${VAR_PREFIX}tab-border-right-color`]: attributes.tabBorderRightColor || undefined,
+        [`${VAR_PREFIX}tab-border-bottom-color`]: attributes.tabBorderBottomColor || undefined,
+        [`${VAR_PREFIX}tab-border-left-color`]: attributes.tabBorderLeftColor || undefined,
         [`${VAR_PREFIX}tab-border-top-width`]: formatValueWithUnit(
           attributes.tabBorderTopWidth,
           attributes.tabBorderTopWidthUnit
@@ -72,27 +75,60 @@ const buildStyleVars = (attributes) => ({
         ),
       }
     : {
-        [`${VAR_PREFIX}tab-border-color`]:
-          attributes.tabBorderColor || undefined,
+        [`${VAR_PREFIX}tab-border-color`]: attributes.tabBorderColor || undefined,
         [`${VAR_PREFIX}tab-border-width`]: formatValueWithUnit(
           attributes.tabBorderWidth,
           attributes.tabBorderWidthUnit
         ),
-      }),
-  [`${VAR_PREFIX}tab-border-radius`]: formatValueWithUnit(
-    attributes.tabBorderRadius,
-    attributes.tabBorderRadiusUnit
-  ),
-  [`${VAR_PREFIX}tab-font-size`]:
-    fontSizeMap[attributes.tabFontSize] || undefined,
-});
+      };
+
+  return { ...baseVars, ...borderVars };
+};
+
+// Custom hook for managing editor styles
+const useEditorStyles = (blockId, activeSlideIndex, lastSelectedSlide) => {
+  const editorStyleId = `rs-timeline-editor-style-${blockId}`;
+  
+  useEffect(() => {
+    if (!blockId) return;
+
+    const visibleIndex = activeSlideIndex ?? lastSelectedSlide;
+    const selector = `.wp-block-rs-timeline-slider.${blockId} > .block-editor-inner-blocks > .block-editor-block-list__layout > *`;
+    
+    const css = visibleIndex !== null 
+      ? `
+          ${selector} { display: none; }
+          ${selector}:nth-child(${visibleIndex + 1}) { display: block; }
+        `
+      : `${selector} { display: none; }`;
+
+    // Use a style element that's managed by React
+    const styleElement = document.getElementById(editorStyleId);
+    if (styleElement) {
+      styleElement.textContent = css;
+    } else {
+      const newStyle = document.createElement("style");
+      newStyle.id = editorStyleId;
+      newStyle.textContent = css;
+      document.head.appendChild(newStyle);
+    }
+
+    return () => {
+      const element = document.getElementById(editorStyleId);
+      if (element) {
+        element.remove();
+      }
+    };
+  }, [blockId, activeSlideIndex, lastSelectedSlide, editorStyleId]);
+};
 
 registerBlockType("rs/timeline-slider", {
   title: "Timeline Slider",
   icon: "schedule",
-  category: "widgets",
+  category: "layout",
   attributes: {
     activeSlideIndex: { type: "number", default: 1 },
+    lastSelectedSlide: { type: "number", default: 1 },
     align: { type: "string" },
     innerContentWidth: { type: "boolean", default: false },
     background: { type: "string", default: "" },
@@ -130,11 +166,13 @@ registerBlockType("rs/timeline-slider", {
     spacing: { margin: true, padding: true },
     __experimentalLayout: true,
     __experimentalVerticalAlignment: true,
+    inserter: true,
   },
-
+  
   edit({ attributes, setAttributes, clientId }) {
     const {
       activeSlideIndex,
+      lastSelectedSlide,
       innerContentWidth,
       useIndividualBorders,
       tabBorderTopWidth,
@@ -163,33 +201,75 @@ registerBlockType("rs/timeline-slider", {
       arrowText,
       arrowTextHover,
       background,
+      blockId,
     } = attributes;
 
-    // Select inner blocks for slides
+    const { insertBlocks } = useDispatch("core/block-editor");
+    
     const innerBlocks = useSelect(
       (select) => select("core/block-editor").getBlocks(clientId),
       [clientId]
     );
 
-    const hasInsertedInitialBlock = useRef(false);
+    const selectedBlockId = useSelect(
+      (select) => select(blockEditorStore).getSelectedBlockClientId(),
+      []
+    );
 
-    // Ensure activeSlideIndex within bounds
-    const clampedIndex = Math.min(activeSlideIndex, innerBlocks.length - 1);
+    // Initialize block ID
+    useEffect(() => {
+      const newBlockId = `slider-${clientId}`;
+      if (!blockId || blockId !== newBlockId) {
+        setAttributes({ blockId: newBlockId });
+      }
+    }, [blockId, clientId, setAttributes]);
 
-    const blockProps = useBlockProps({
-      className: `timeline-slider-editor ${attributes.blockId || ""}`,
-      style: {
+    // Initialize with first child block
+    useEffect(() => {
+      if (innerBlocks.length === 0) {
+        const newBlock = createBlock("rs/timeline-slider-child");
+        insertBlocks(newBlock, 0, clientId);
+      }
+    }, [innerBlocks.length, clientId, insertBlocks]);
+
+    // Track selected child block
+    useEffect(() => {
+      if (!selectedBlockId || !blockId) return;
+
+      const block = wp.data.select("core/block-editor").getBlock(selectedBlockId);
+      if (!block || block.name !== "rs/timeline-slider-child") return;
+
+      const parentId = wp.data.select("core/block-editor").getBlockParents(selectedBlockId)[0];
+      const isChildOfThisBlock = parentId === clientId;
+
+      if (isChildOfThisBlock) {
+        const parentBlock = wp.data.select("core/block-editor").getBlock(clientId);
+        const index = parentBlock.innerBlocks.findIndex(
+          (inner) => inner.clientId === selectedBlockId
+        );
+        if (index !== -1 && index !== lastSelectedSlide) {
+          setAttributes({ lastSelectedSlide: index });
+        }
+      }
+    }, [selectedBlockId, blockId, clientId, lastSelectedSlide, setAttributes]);
+
+    // Use custom hook for editor styles
+    useEditorStyles(blockId, activeSlideIndex, lastSelectedSlide);
+
+    // Memoized style calculations
+    const editorStyles = useMemo(() => {
+      return {
         [`${VAR_PREFIX}tab-background`]: tabBackground || "#eee",
         [`${VAR_PREFIX}tab-background-hover`]: tabBackgroundHover || "#ddd",
         [`${VAR_PREFIX}tab-font-size`]: fontSizeMap[tabFontSize] || "1rem",
-        [`${VAR_PREFIX}tab-font-family`]:
-          tabFontFamily === "heading"
-            ? "var(--global-heading-font-family)"
+        [`${VAR_PREFIX}tab-font-family`]: 
+          tabFontFamily === "heading" 
+            ? "var(--global-heading-font-family)" 
             : "var(--global-body-font-family)",
-        [`${VAR_PREFIX}tab-border-width`]:
+        [`${VAR_PREFIX}tab-border-width`]: 
           formatValueWithUnit(tabBorderWidth, tabBorderWidthUnit) || "0px",
         [`${VAR_PREFIX}tab-border-color`]: tabBorderColor || "transparent",
-        [`${VAR_PREFIX}tab-border-radius`]:
+        [`${VAR_PREFIX}tab-border-radius`]: 
           formatValueWithUnit(tabBorderRadius, tabBorderRadiusUnit) || "0px",
         [`${VAR_PREFIX}arrow-background`]: arrowBackground || "#eee",
         [`${VAR_PREFIX}arrow-background-hover`]: arrowBackgroundHover || "#ddd",
@@ -197,122 +277,49 @@ registerBlockType("rs/timeline-slider", {
         [`${VAR_PREFIX}arrow-text-hover`]: arrowTextHover || "#000",
         [`${VAR_PREFIX}background`]: background || "transparent",
         [`${VAR_PREFIX}active-slide`]: activeSlideIndex || 1,
-      },
-      "data-active-slide": activeSlideIndex || 1,
-    });
-
-    // Set blockId once on mount
-    useEffect(() => {
-      if (!attributes.blockId) {
-        setAttributes({ blockId: `slider-${clientId}` });
-      }
-    }, [attributes.blockId, clientId, setAttributes]);
-
-    // Dynamic CSS variables style tag management
-    useEffect(() => {
-      if (!attributes.blockId) return;
-
-      const styleId = `rs-timeline-slider-vars-${attributes.blockId}`;
-      let styleTag = document.getElementById(styleId);
-
-      const getAllStyleVars = (attrs) => {
-        const baseVars = buildStyleVars(attrs);
-        const borderVars = attrs.useIndividualBorders
-          ? {
-              [`${VAR_PREFIX}tab-border-top-width`]: formatValueWithUnit(
-                attrs.tabBorderTopWidth,
-                attrs.tabBorderTopWidthUnit
-              ),
-              [`${VAR_PREFIX}tab-border-right-width`]: formatValueWithUnit(
-                attrs.tabBorderRightWidth,
-                attrs.tabBorderRightWidthUnit
-              ),
-              [`${VAR_PREFIX}tab-border-bottom-width`]: formatValueWithUnit(
-                attrs.tabBorderBottomWidth,
-                attrs.tabBorderBottomWidthUnit
-              ),
-              [`${VAR_PREFIX}tab-border-left-width`]: formatValueWithUnit(
-                attrs.tabBorderLeftWidth,
-                attrs.tabBorderLeftWidthUnit
-              ),
-            }
-          : {
-              [`${VAR_PREFIX}tab-border-width`]: formatValueWithUnit(
-                attrs.tabBorderWidth,
-                attrs.tabBorderWidthUnit
-              ),
-            };
-
-        return {
-          ...baseVars,
-          ...borderVars,
-          [`${VAR_PREFIX}tab-border-radius`]: formatValueWithUnit(
-            attrs.tabBorderRadius,
-            attrs.tabBorderRadiusUnit
-          ),
-        };
-      };
-
-      const cssVars = Object.entries(getAllStyleVars(attributes))
-        .filter(([, val]) => val !== undefined && val !== "")
-        .map(([key, val]) => `${key}: ${val};`)
-        .join("\n");
-
-      const safeBlockId = attributes.blockId.replace(/[^a-zA-Z0-9_-]/g, "");
-      const css = `.${safeBlockId} {\n${cssVars}\n}`;
-
-      if (!styleTag) {
-        styleTag = document.createElement("style");
-        styleTag.id = styleId;
-        document.head.appendChild(styleTag);
-      }
-      styleTag.textContent = css;
-
-      return () => {
-        if (styleTag && document.getElementById(styleId)) {
-          styleTag.remove();
-        }
       };
     }, [
-      attributes,
-      tabBorderTopWidth,
-      tabBorderTopWidthUnit,
-      tabBorderRightWidth,
-      tabBorderRightWidthUnit,
-      tabBorderBottomWidth,
-      tabBorderBottomWidthUnit,
-      tabBorderLeftWidth,
-      tabBorderLeftWidthUnit,
-      tabBorderWidth,
-      tabBorderWidthUnit,
-      tabBorderRadius,
-      tabBorderRadiusUnit,
+      tabBackground, tabBackgroundHover, tabFontSize, tabFontFamily,
+      tabBorderWidth, tabBorderWidthUnit, tabBorderColor,
+      tabBorderRadius, tabBorderRadiusUnit, arrowBackground,
+      arrowBackgroundHover, arrowText, arrowTextHover, background, activeSlideIndex
     ]);
 
-    // Auto add first child slide if none exist
-    useEffect(() => {
-      if (
-        clientId &&
-        innerBlocks.length === 0 &&
-        !hasInsertedInitialBlock.current
-      ) {
-        setTimeout(() => {
-          const firstChild = createBlock("rs/timeline-slider-child");
-          dispatch("core/block-editor").insertBlocks(firstChild, 0, clientId);
-          hasInsertedInitialBlock.current = true;
-        }, 0);
-      }
-    }, [clientId, innerBlocks.length]);
+    const clampedIndex = Math.max(0, Math.min(activeSlideIndex ?? 0, innerBlocks.length - 1));
 
-    const goToSlide = (index) => {
-      setAttributes({ activeSlideIndex: index });
-    };
+    const blockProps = useBlockProps({
+      className: `timeline-slider-editor ${blockId || ""}`,
+      style: editorStyles,
+      "data-active-slide": activeSlideIndex || 1,
+      "data-slider": true,
+    });
+
+    // Memoized callback functions
+    const goToSlide = useCallback((index) => {
+      setAttributes({
+        activeSlideIndex: index,
+        lastSelectedSlide: index,
+      });
+    }, [setAttributes]);
+
+    const addNewSlide = useCallback(() => {
+      const newBlock = createBlock("rs/timeline-slider-child");
+      insertBlocks(newBlock, undefined, clientId);
+    }, [insertBlocks, clientId]);
+
+    const goToPreviousSlide = useCallback(() => {
+      goToSlide(Math.max(clampedIndex - 1, 0));
+    }, [goToSlide, clampedIndex]);
+
+    const goToNextSlide = useCallback(() => {
+      goToSlide(Math.min(clampedIndex + 1, innerBlocks.length - 1));
+    }, [goToSlide, clampedIndex, innerBlocks.length]);
 
     return (
       <>
         <InspectorControls>
-          <PanelBody
-            title={__("Styles")}
+          <PanelBody 
+            title={__("Styles")} 
             initialOpen={true}
             style={{ display: "grid", gap: "1em" }}
           >
@@ -321,6 +328,7 @@ registerBlockType("rs/timeline-slider", {
               value={background}
               onChange={(value) => setAttributes({ background: value })}
             />
+            
             <div>
               <label>{__("Tab Background")}</label>
               <div style={{ display: "flex", gap: "20px" }}>
@@ -332,9 +340,7 @@ registerBlockType("rs/timeline-slider", {
                 <ColorPickerCircle
                   label={__("Hover")}
                   value={tabBackgroundHover}
-                  onChange={(value) =>
-                    setAttributes({ tabBackgroundHover: value })
-                  }
+                  onChange={(value) => setAttributes({ tabBackgroundHover: value })}
                 />
               </div>
             </div>
@@ -356,12 +362,8 @@ registerBlockType("rs/timeline-slider", {
                   label={__("Border Width")}
                   value={tabBorderWidth}
                   unit={tabBorderWidthUnit}
-                  onChangeValue={(val) =>
-                    setAttributes({ tabBorderWidth: val })
-                  }
-                  onChangeUnit={(unit) =>
-                    setAttributes({ tabBorderWidthUnit: unit })
-                  }
+                  onChangeValue={(val) => setAttributes({ tabBorderWidth: val })}
+                  onChangeUnit={(unit) => setAttributes({ tabBorderWidthUnit: unit })}
                 />
               </>
             )}
@@ -372,76 +374,49 @@ registerBlockType("rs/timeline-slider", {
                   label={__("Top Border Width")}
                   value={tabBorderTopWidth}
                   unit={tabBorderTopWidthUnit}
-                  onChangeValue={(val) =>
-                    setAttributes({ tabBorderTopWidth: val })
-                  }
-                  onChangeUnit={(unit) =>
-                    setAttributes({ tabBorderTopWidthUnit: unit })
-                  }
+                  onChangeValue={(val) => setAttributes({ tabBorderTopWidth: val })}
+                  onChangeUnit={(unit) => setAttributes({ tabBorderTopWidthUnit: unit })}
                 />
                 <ColorPickerCircle
                   label={__("Top Border Colour")}
                   value={tabBorderTopColor}
-                  onChange={(value) =>
-                    setAttributes({ tabBorderTopColor: value })
-                  }
+                  onChange={(value) => setAttributes({ tabBorderTopColor: value })}
                 />
-
                 <UnitInputControl
                   label={__("Right Border Width")}
                   value={tabBorderRightWidth}
                   unit={tabBorderRightWidthUnit}
-                  onChangeValue={(val) =>
-                    setAttributes({ tabBorderRightWidth: val })
-                  }
-                  onChangeUnit={(unit) =>
-                    setAttributes({ tabBorderRightWidthUnit: unit })
-                  }
+                  onChangeValue={(val) => setAttributes({ tabBorderRightWidth: val })}
+                  onChangeUnit={(unit) => setAttributes({ tabBorderRightWidthUnit: unit })}
                 />
                 <ColorPickerCircle
                   label={__("Right Border Colour")}
                   value={tabBorderRightColor}
-                  onChange={(value) =>
-                    setAttributes({ tabBorderRightColor: value })
-                  }
+                  onChange={(value) => setAttributes({ tabBorderRightColor: value })}
                 />
-
                 <UnitInputControl
                   label={__("Bottom Border Width")}
                   value={tabBorderBottomWidth}
                   unit={tabBorderBottomWidthUnit}
-                  onChangeValue={(val) =>
-                    setAttributes({ tabBorderBottomWidth: val })
-                  }
-                  onChangeUnit={(unit) =>
-                    setAttributes({ tabBorderBottomWidthUnit: unit })
-                  }
+                  onChangeValue={(val) => setAttributes({ tabBorderBottomWidth: val })}
+                  onChangeUnit={(unit) => setAttributes({ tabBorderBottomWidthUnit: unit })}
                 />
                 <ColorPickerCircle
                   label={__("Bottom Border Colour")}
                   value={tabBorderBottomColor}
-                  onChange={(value) =>
-                    setAttributes({ tabBorderBottomColor: value })
-                  }
+                  onChange={(value) => setAttributes({ tabBorderBottomColor: value })}
                 />
-
                 <UnitInputControl
                   label={__("Left Border Width")}
                   value={tabBorderLeftWidth}
                   unit={tabBorderLeftWidthUnit}
-                  onChangeValue={(val) =>
-                    setAttributes({ tabBorderLeftWidth: val })
-                  }
-                  onChangeUnit={(unit) =>
-                    setAttributes({ tabBorderLeftWidthUnit: unit })
-                  }
+                  onChangeValue={(val) => setAttributes({ tabBorderLeftWidth: val })}
+                  onChangeUnit={(unit) => setAttributes({ tabBorderLeftWidthUnit: unit })}
                 />
                 <ColorPickerCircle
                   label={__("Left Border Colour")}
                   value={tabBorderLeftColor}
-                  onChange={(value) =>
-                    setAttributes({ tabBorderLeftColor: value })
-                  }
+                  onChange={(value) => setAttributes({ tabBorderLeftColor: value })}
                 />
               </>
             )}
@@ -451,9 +426,7 @@ registerBlockType("rs/timeline-slider", {
               value={tabBorderRadius}
               unit={tabBorderRadiusUnit}
               onChangeValue={(val) => setAttributes({ tabBorderRadius: val })}
-              onChangeUnit={(unit) =>
-                setAttributes({ tabBorderRadiusUnit: unit })
-              }
+              onChangeUnit={(unit) => setAttributes({ tabBorderRadiusUnit: unit })}
             />
 
             <div>
@@ -462,16 +435,12 @@ registerBlockType("rs/timeline-slider", {
                 <ColorPickerCircle
                   label={__("Normal")}
                   value={arrowBackground}
-                  onChange={(value) =>
-                    setAttributes({ arrowBackground: value })
-                  }
+                  onChange={(value) => setAttributes({ arrowBackground: value })}
                 />
                 <ColorPickerCircle
                   label={__("Hover")}
                   value={arrowBackgroundHover}
-                  onChange={(value) =>
-                    setAttributes({ arrowBackgroundHover: value })
-                  }
+                  onChange={(value) => setAttributes({ arrowBackgroundHover: value })}
                 />
               </div>
             </div>
@@ -524,14 +493,7 @@ registerBlockType("rs/timeline-slider", {
             <ToolbarButton
               icon={plus}
               label={__("Add Timeline Slide")}
-              onClick={() => {
-                const newBlock = createBlock("rs/timeline-slider-child");
-                dispatch("core/block-editor").insertBlocks(
-                  newBlock,
-                  undefined,
-                  clientId
-                );
-              }}
+              onClick={addNewSlide}
               aria-label="Add a timeline slide"
             />
             <DropdownMenu
@@ -540,76 +502,77 @@ registerBlockType("rs/timeline-slider", {
               popoverProps={{ placement: "bottom-start", offset: [0, 4] }}
             >
               {() => (
-                <div
-                  style={{
-                    padding: "10px",
-                    display: "flex",
-                    minWidth: "205px",
-                  }}
-                >
+                <div style={{ padding: "10px", display: "flex", minWidth: "205px" }}>
                   <ToggleControl
                     __nextHasNoMarginBottom
                     label={__("Use Inner Content Width")}
                     checked={innerContentWidth}
-                    onChange={(value) =>
-                      setAttributes({ innerContentWidth: value })
-                    }
+                    onChange={(value) => setAttributes({ innerContentWidth: value })}
                   />
                 </div>
               )}
             </DropdownMenu>
           </ToolbarGroup>
-
           <ToolbarGroup>
             <ToolbarButton
               icon="arrow-left-alt"
               label="Previous Slide"
-              onClick={() => goToSlide(Math.max(clampedIndex - 1, 0))}
+              onClick={goToPreviousSlide}
               disabled={clampedIndex === 0}
             />
             <ToolbarButton
               icon="arrow-right-alt"
               label="Next Slide"
-              onClick={() =>
-                goToSlide(Math.min(clampedIndex + 1, innerBlocks.length - 1))
-              }
+              onClick={goToNextSlide}
               disabled={clampedIndex === innerBlocks.length - 1}
             />
           </ToolbarGroup>
         </BlockControls>
 
-        <div {...blockProps} className="timeline-slider-editor">
-          {innerBlocks.map((childBlock, index) => (
-            <div
-              key={childBlock.clientId}
-              className={`rs-timeline-slider-child slide-${index}`}
-              style={{ display: index === activeSlideIndex ? "block" : "none" }}
-            >
-              <InnerBlocks
-                templateLock={false}
-                template={[["rs/timeline-slider-child", {}]]}
-                renderAppender={() => null}
-                allowedBlocks={ALLOWED_BLOCKS}
-                __experimentalKeepTemplateProps
-                templateInsertUpdatesSelection={false}
-                rootClientId={childBlock.clientId}
-              />
-            </div>
-          ))}
-          {!innerBlocks.length && (
-            <div style={{ textAlign: "center", color: "#999" }}>
-              {__("Add timeline slides using the toolbar button above")}
-            </div>
-          )}
+        <div {...blockProps}>
+          <div className={`timeline-slider-wrapper ${innerContentWidth ? "kb-theme-content-width" : ""}`}>
+            <InnerBlocks
+              templateLock={false}
+              template={[["rs/timeline-slider-child", {}]]}
+              allowedBlocks={ALLOWED_BLOCKS}
+              templateInsertUpdatesSelection={false}
+              renderAppender={false}
+            />
+            {!innerBlocks.length && (
+              <div style={{ textAlign: "center", color: "#999" }}>
+                {__("Add timeline slides using the toolbar button above")}
+              </div>
+            )}
+          </div>
         </div>
       </>
     );
   },
-  save() {
+
+  save({ attributes }) {
+    const blockProps = useBlockProps.save();
+    const styleVars = buildStyleVars(attributes);
+    
+    const cssVars = Object.entries(styleVars)
+      .filter(([_, val]) => val !== undefined && val !== "")
+      .map(([key, val]) => `${key}: ${val};`)
+      .join(" ");
+
     return (
-      <div {...useBlockProps.save()}>
-        <InnerBlocks.Content />
-      </div>
+      <>
+        <style>
+          {`.timeline-slider[data-slider="true"] { ${cssVars} }`}
+        </style>
+        <div
+          {...blockProps}
+          data-slider={true}
+          data-active-slide={attributes.activeSlideIndex ?? attributes.lastSelectedSlide ?? 1}
+        >
+          <div className={`timeline-slider-wrapper ${attributes.innerContentWidth ? "kb-theme-content-width" : ""}`}>
+            <InnerBlocks.Content />
+          </div>
+        </div>
+      </>
     );
   },
 });

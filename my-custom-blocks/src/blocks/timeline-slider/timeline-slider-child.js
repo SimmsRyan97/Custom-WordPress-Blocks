@@ -1,87 +1,86 @@
 import { __ } from "@wordpress/i18n";
-import { registerBlockType } from '@wordpress/blocks';
+import { registerBlockType } from "@wordpress/blocks";
 import {
-    InnerBlocks,
-    InspectorControls,
-    useBlockProps,
-    useClientId,
-} from '@wordpress/block-editor';
-import { PanelBody, TextControl } from '@wordpress/components';
-import { useEffect, useState } from '@wordpress/element';
+  InnerBlocks,
+  InspectorControls,
+  useBlockProps,
+} from "@wordpress/block-editor";
+import { PanelBody, TextControl } from "@wordpress/components";
+import { useEffect } from "@wordpress/element";
 
-import './editor.scss';
-import './style.scss';
+import "./editor.scss";
+import "./style.scss";
 
-registerBlockType('rs/timeline-slider-child', {
-    title: 'Time Slide',
-    icon: 'slides',
-    category: 'layout',
-    parent: ['rs/timeline-slider'],
-    attributes: {
-        title: {
-            type: 'string',
-            default: '',
-        },
-        slideId: {
-            type: 'string',
-        },
-        slideIndex: {
-            type: 'number',
-        },
-        // Add any new attributes you might want for styling or state here
-        // e.g. borderColor, backgroundColor, typography etc.
+registerBlockType("rs/timeline-slider-child", {
+  title: "Timeline Slider Child",
+  icon: "slides",
+  category: "layout",
+  parent: ["rs/timeline-slider"],
+  attributes: {
+    title: {
+      type: "string",
+      default: "",
     },
-    edit({ attributes, setAttributes, clientId }) {
-        const blockProps = useBlockProps({});
-
-        const [slideId, setSlideId] = useState('');
-
-        useEffect(() => {
-            if (clientId && !attributes.slideId) {
-                // Generate unique slideId based on clientId
-                const id = 'slide-' + clientId.slice(0, 8);
-                setAttributes({ slideId: id });
-                setSlideId(id);
-            } else {
-                setSlideId(attributes.slideId);
-            }
-        }, [clientId]);
-
-        return (
-            <>
-                <InspectorControls>
-                    <PanelBody title={__("Slide Settings")}>
-                        <TextControl
-                            label={__("Slide Title")}
-                            value={attributes.title}
-                            onChange={(title) => setAttributes({ title })}
-                        />
-                        {/* Additional controls for styling can go here */}
-                    </PanelBody>
-                </InspectorControls>
-                <div
-                    {...blockProps}
-                    data-slide-id={slideId}
-                    className={`slide-editor slide-${attributes.slideIndex || 0}`}
-                    // Add role or aria-labels if needed for accessibility
-                    role="group"
-                    aria-label={attributes.title || `Slide ${attributes.slideIndex || 0}`}
-                >
-                    <InnerBlocks />
-                </div>
-            </>
-        );
+    slideId: {
+      type: "string",
     },
-    save({ attributes }) {
-        // Save includes the slide index and ID for frontend usage
-        return (
-            <div
-                className={`slide slide-${attributes.slideIndex || 0}`}
-                data-slide-id={attributes.slideId}
-                data-title={attributes.title}
-            >
-                <InnerBlocks.Content />
-            </div>
-        );
+    slideIndex: {
+      type: "number",
     },
+  },
+  
+  edit({ attributes, setAttributes, clientId }) {
+    const blockProps = useBlockProps();
+
+    // Initialize slideId when component mounts
+    useEffect(() => {
+      if (clientId && !attributes.slideId) {
+        const id = `slide-${clientId.slice(0, 8)}`;
+        setAttributes({ slideId: id });
+      }
+    }, [clientId, attributes.slideId, setAttributes]);
+
+    return (
+      <>
+        <InspectorControls>
+          <PanelBody title={__("Slide Settings")}>
+            <TextControl
+              label={__("Slide Title")}
+              value={attributes.title}
+              onChange={(title) => setAttributes({ title })}
+              help={__("This title will be used for navigation and accessibility")}
+            />
+            {/* Additional controls for styling can go here */}
+          </PanelBody>
+        </InspectorControls>
+        
+        <div
+          {...blockProps}
+          data-slide-id={attributes.slideId}
+          className={`slide-editor slide-${attributes.slideIndex || 0}`}
+          role="group"
+          aria-label={attributes.title || `Slide ${attributes.slideIndex + 1 || 1}`}
+        >
+          <InnerBlocks />
+        </div>
+      </>
+    );
+  },
+
+  save({ attributes }) {
+    const blockProps = useBlockProps.save();
+    
+    return (
+      <div
+        {...blockProps}
+        data-slide-id={attributes.slideId}
+        data-title={attributes.title || ""}
+        className={`slide slide-${attributes.slideIndex || 0}`}
+        role="group"
+        aria-label={attributes.title || `Slide ${attributes.slideIndex + 1 || 1}`}
+      >
+        <InnerBlocks.Content />
+      </div>
+    );
+  },
 });

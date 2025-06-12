@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const sliderRoot = document.querySelector('.timeline-slider[data-slider="true"] .wp-block-group__inner-container');
+  const sliderRoot = document.querySelector('.timeline-slider[data-slider="true"]');
   if (!sliderRoot) return;
 
   const slides = Array.from(sliderRoot.querySelectorAll('.slide'));
@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const SLIDES_PER_GROUP = 3;
   const totalGroups = Math.ceil(slides.length / SLIDES_PER_GROUP);
 
+  // Get max height among all slides
   function getMaxHeight(slides) {
     let maxHeight = 0;
     slides.forEach(slide => {
@@ -28,8 +29,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const maxHeight = getMaxHeight(slides);
 
-  // Remove slides before rebuilding DOM
+  const sliderWrapper = sliderRoot.querySelector('.timeline-slider-wrapper');
+  if (!sliderWrapper) return;
+
   slides.forEach(slide => slide.remove());
+
+  let contentContainer = sliderRoot.querySelector('.slider-content-container');
+  if (!contentContainer) {
+    contentContainer = document.createElement('div');
+    contentContainer.className = 'slider-content-container';
+    sliderWrapper.appendChild(contentContainer);
+  }
+  contentContainer.innerHTML = '';
 
   const groups = [];
 
@@ -41,15 +52,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const slideWrap = document.createElement('div');
     slideWrap.className = 'slide-wrap';
+    slideWrap.style.position = 'absolute';
+    slideWrap.style.top = 0;
+    slideWrap.style.left = 0;
+    slideWrap.style.width = '100%';
 
     const tabsContainer = document.createElement('div');
     tabsContainer.className = 'tabs';
 
-    const contentContainer = document.createElement('div');
-    contentContainer.className = 'content';
-
-    // Set fixed height for the content container to tallest slide height across all groups
-    contentContainer.style.minHeight = maxHeight + 'px';
+    const contentTabsContainer = document.createElement('div');
+    contentTabsContainer.className = 'content';
+    contentTabsContainer.style.minHeight = maxHeight + 'px';
+    contentTabsContainer.style.position = 'relative';
 
     const usedSlideIds = new Set();
 
@@ -58,15 +72,21 @@ document.addEventListener('DOMContentLoaded', () => {
       let slideId = baseId;
       let counter = 1;
       while (usedSlideIds.has(slideId)) {
-        slideId = `${baseId}-${counter}`;
-        counter++;
+        slideId = `${baseId}-${counter++}`;
       }
       usedSlideIds.add(slideId);
 
       const slideTitle = slide.getAttribute('data-title') || `Slide ${groupIndex * SLIDES_PER_GROUP + index + 1}`;
-
       slide.setAttribute('data-slide-id', slideId);
       slide.setAttribute('data-title', slideTitle);
+      slide.classList.add('fade-slide');
+      slide.style.position = 'absolute';
+      slide.style.top = 0;
+      slide.style.left = 0;
+      slide.style.width = '100%';
+      slide.style.transition = 'opacity 0.4s ease';
+      slide.style.opacity = index === 0 ? '1' : '0';
+      slide.dataset.active = index === 0 ? 'true' : 'false';
 
       const tabBtn = document.createElement('button');
       tabBtn.type = 'button';
@@ -74,13 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tabBtn.textContent = slideTitle;
       tabBtn.dataset.target = slideId;
 
-      if (index === 0) {
-        tabBtn.classList.add('active');
-        slide.classList.add('active');
-        slide.style.display = '';
-      } else {
-        slide.classList.remove('active');
-      }
+      if (index === 0) tabBtn.classList.add('active');
 
       tabBtn.addEventListener('click', () => {
         tabsContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
@@ -88,74 +102,95 @@ document.addEventListener('DOMContentLoaded', () => {
 
         groupSlides.forEach(s => {
           if (s.getAttribute('data-slide-id') === slideId) {
-            s.classList.add('active');
+            s.style.opacity = '1';
+            s.dataset.active = 'true';
           } else {
-            s.classList.remove('active');
+            s.style.opacity = '0';
+            s.dataset.active = 'false';
           }
         });
       });
 
       tabsContainer.appendChild(tabBtn);
-      contentContainer.appendChild(slide);
+      contentTabsContainer.appendChild(slide);
     });
 
     slideWrap.appendChild(tabsContainer);
-    slideWrap.appendChild(contentContainer);
+    slideWrap.appendChild(contentTabsContainer);
     groups.push(slideWrap);
   }
 
+  // Nav arrows
+  let navWrapper, prevBtn, nextBtn;
   if (slides.length > SLIDES_PER_GROUP) {
-    const navWrapper = document.createElement('div');
+    navWrapper = document.createElement('div');
     navWrapper.className = 'nav-arrows';
 
-    const prevBtn = document.createElement('button');
+    prevBtn = document.createElement('button');
     prevBtn.className = 'prev';
     prevBtn.textContent = '←';
     prevBtn.disabled = true;
 
-    const nextBtn = document.createElement('button');
+    nextBtn = document.createElement('button');
     nextBtn.className = 'next';
     nextBtn.textContent = '→';
 
     navWrapper.appendChild(prevBtn);
     navWrapper.appendChild(nextBtn);
-    sliderRoot.appendChild(navWrapper);
+  }
 
-    let currentGroup = 0;
+  // Append groups
+  groups.forEach(group => {
+    group.style.opacity = '0';
+    group.style.pointerEvents = 'none';
+    group.style.transition = 'opacity 0.4s ease';
+    contentContainer.appendChild(group);
+  });
 
-    function showGroup(index) {
-      const currentWrap = groups[index];
+  if (navWrapper) {
+    contentContainer.appendChild(navWrapper);
+  }
 
-      sliderRoot.querySelectorAll('.slide-wrap').forEach(sw => sw.remove());
+  document.querySelectorAll('.timeline-slider-wrapper .tabs').forEach(tabs => {
+    const count = tabs.querySelectorAll('button').length;
+    tabs.classList.add(`tab-count-${count}`);
+  });
 
-      currentWrap.classList.remove('active');
-      sliderRoot.insertBefore(currentWrap, navWrapper);
+  let currentGroup = 0;
 
-      queueMicrotask(() => {
-        currentWrap.classList.add('active');
-      });
+  function showGroup(index) {
+    groups.forEach((group, i) => {
+      if (i === index) {
+        group.classList.add('active');
+        group.style.opacity = '1';
+        group.style.pointerEvents = 'auto';
+      } else {
+        group.classList.remove('active');
+        group.style.opacity = '0';
+        group.style.pointerEvents = 'none';
+      }
+    });
 
+    currentGroup = index;
+    if (prevBtn && nextBtn) {
       prevBtn.disabled = index === 0;
       nextBtn.disabled = index === groups.length - 1;
     }
+  }
 
+  if (prevBtn && nextBtn) {
     prevBtn.addEventListener('click', () => {
       if (currentGroup > 0) {
-        currentGroup--;
-        showGroup(currentGroup);
+        showGroup(--currentGroup);
       }
     });
 
     nextBtn.addEventListener('click', () => {
       if (currentGroup < groups.length - 1) {
-        currentGroup++;
-        showGroup(currentGroup);
+        showGroup(++currentGroup);
       }
     });
-
-    showGroup(0);
-  } else {
-    sliderRoot.appendChild(groups[0]);
-    groups[0].classList.add('active');
   }
+
+  showGroup(0);
 });

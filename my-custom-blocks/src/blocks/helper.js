@@ -7,8 +7,6 @@ import {
 
 import { useSetting } from '@wordpress/block-editor';
 
-const themeColors = useSetting( 'color.palette.theme' );
-
 // Using Kadence font map
 const fontSizeMap = {
     sm: 'var(--global-kb-font-size-sm)',
@@ -38,6 +36,7 @@ const formatValueWithUnit = (val, unit = 'px') => {
 
 // Colour circle with fallback & clear support
 const ColorPickerCircle = ({ value, onChange, label }) => {
+    const themeColors = useSetting( 'color.palette.theme' );
     return (
         <div style={{ display: 'grid', gap: '1em' }}>
             <label style={{ display: 'block', fontSize: '0.85rem' }}>{label}</label>

@@ -1,86 +1,113 @@
-.timeline-slider {
+.wp-block-rs-timeline-slider {
   width: 100%;
   background: var(--rs-slider-background, transparent);
+  position: relative;
+  border: none;
 
-  &.alignfull > .wp-block-group__inner-container {
+  &.alignfull > .timeline-slider-wrapper {
     padding-left: var(--global-content-edge-padding, 15px);
     padding-right: var(--global-content-edge-padding, 15px);
   }
 
-  .wp-block-group__inner-container.kb-theme-content-width {
+  .timeline-slider-wrapper.kb-theme-content-width {
     margin-left: auto;
     margin-right: auto;
-  }
-
-  .kb-theme-content-width {
     max-width: var(--global-content-width, 1290px);
   }
 
-  .slide-wrap {
-    margin-bottom: 2rem;
-    overflow: hidden;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-
-    &.active {
-      opacity: 1;
-    }
-  }
-
-  .tabs {
-    display: flex;
-    gap: 0.25rem;
-    margin-bottom: 2rem;
-  }
-
-  .tabs button {
-    flex-grow: 1;
-    max-width: 33.33%;
-    padding: 0.5rem 1rem;
-    background-color: var(--rs-slider-tab-background, transparent);
-    border-style: solid;
-    border-top-width: var(--rs-slider-tab-border-top-width, var(--rs-slider-tab-border-width, 0));
-    border-right-width: var(--rs-slider-tab-border-right-width, var(--rs-slider-tab-border-width, 0));
-    border-bottom-width: var(--rs-slider-tab-border-bottom-width, var(--rs-slider-tab-border-width, 0));
-    border-left-width: var(--rs-slider-tab-border-left-width, var(--rs-slider-tab-border-width, 0));
-
-    border-top-color: var(--rs-slider-tab-border-top-color, var(--rs-slider-tab-border-color, repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px));
-    border-right-color: var(--rs-slider-tab-border-right-color, var(--rs-slider-tab-border-color, repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px));
-    border-bottom-color: var(--rs-slider-tab-border-bottom-color, var(--rs-slider-tab-border-color, repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px));
-    border-left-color: var(--rs-slider-tab-border-left-color, var(--rs-slider-tab-border-color, repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 10px 10px));
-
-    border-radius: var(--rs-slider-tab-border-radius, 0);
-    font-weight: 600;
-    font-family: var(--rs-slider-tab-font-family, inherit);
-    font-size: var(--rs-slider-tab-font-size, 1rem);
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-
-    &:hover {
-      background-color: var(--rs-slider-tab-background-hover, transparent);
-    }
-  }
-
-  @media screen and (max-width: 425px) {
-    .tabs button {
-      max-width: 100%;
-    }
-  }
-
-  .content {
+  .slide-content-container {
     position: relative;
-    padding: 1rem;
-    height: auto;
-    transition: height 0.3s ease;
   }
 
-  .slide {
+  /* Slide wrapper controls visibility and opacity */
+  .slide-wrap {
     position: absolute;
     inset: 0;
     opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+
+    &.active {
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 2;
+    }
+  }
+
+  /* Tabs container */
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    padding: 1rem 0;
+    user-select: none;
+
+    &.tab-count-1 {
+      justify-content: center;
+
+      button {
+        flex: 0 0 auto;
+        max-width: 200px;
+      }
+    }
+
+    &.tab-count-2 {
+      justify-content: space-between;
+
+      button {
+        flex: 0 1 45%;
+      }
+    }
+
+    &.tab-count-3 {
+      justify-content: space-between;
+
+      button {
+        flex: 0 1 33.33%;
+      }
+    }
+  }
+
+  /* Tab buttons */
+  .tabs button {
+    padding: 0.5rem 1rem;
+    background-color: var(--rs-slider-tab-background, #f5f5f5);
+    border-top: var(--rs-slider-tab-border-top-width, var(--rs-slider-tab-border-width, 1px)) solid var(--rs-slider-tab-border-top-color, var(--rs-slider-tab-border-color, #ccc));
+    border-right: var(--rs-slider-tab-border-right-width, var(--rs-slider-tab-border-width, 1px)) solid var(--rs-slider-tab-border-right-color, var(--rs-slider-tab-border-color, #ccc));
+    border-bottom: var(--rs-slider-tab-border-bottom-width, var(--rs-slider-tab-border-width, 1px)) solid var(--rs-slider-tab-border-bottom-color, var(--rs-slider-tab-border-color, #ccc));
+    border-left: var(--rs-slider-tab-border-left-width, var(--rs-slider-tab-border-width, 1px)) solid var(--rs-slider-tab-border-left-color, var(--rs-slider-tab-border-color, #ccc));
+    border-radius: var(--rs-slider-tab-border-radius, 0);
+    font-family: var(--rs-slider-tab-font-family, inherit);
+    font-size: var(--rs-slider-tab-font-size, 1rem);
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: var(--rs-slider-tab-background-hover, #e0e0e0);
+      border-color: var(--rs-slider-tab-border-color-hover, #bbb);
+    }
+
+    &.active {
+      font-weight: 700;
+    }
+  }
+
+  /* Content wrapper for slides, relative for absolute slide positioning */
+  .content {
+    position: relative;
+    padding: 1rem;
+    min-height: 200px; /* prevent layout jump */
+    transition: height 0.4s ease;
+  }
+
+  /* Individual slides */
+  .slide {
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
 
     &.active {
       opacity: 1;
@@ -90,6 +117,7 @@
     }
   }
 
+  /* Navigation arrows container */
   .nav-arrows {
     display: flex;
     justify-content: space-between;
@@ -97,23 +125,22 @@
     padding: 0 1rem;
 
     button {
-      background-color: var(--rs-slider-arrow-background, transparent);
-      color: var(--rs-slider-arrow-text, currentColor);
+      background-color: var(--rs-slider-arrow-background, #f0f0f0);
+      color: var(--rs-slider-arrow-text, #333);
       border: none;
-      padding: 0.5rem 1rem;
       font-size: 1rem;
       cursor: pointer;
       border-radius: 10px;
       transition: background-color 0.3s ease, color 0.3s ease;
 
-      &:disabled {
-        opacity: 0.8;
-        cursor: not-allowed;
+      &:hover:not(:disabled) {
+        background-color: var(--rs-slider-arrow-background-hover, #ddd);
+        color: var(--rs-slider-arrow-text-hover, #000);
       }
 
-      &:hover:not(:disabled) {
-        background-color: var(--rs-slider-arrow-background-hover, transparent);
-        color: var(--rs-slider-arrow-text-hover, currentColor);
+      &:disabled {
+        opacity: 0.6;
+        cursor: default;
       }
     }
   }
