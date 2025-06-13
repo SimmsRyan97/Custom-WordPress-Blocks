@@ -79,6 +79,10 @@
       font-size: var(--rs-slider-tab-font-size, 1rem);
       cursor: pointer;
       transition: all 0.3s ease;
+
+      &.active {
+        box-shadow: 0px 2px 5px 1px rgba(0, 0, 0, 0.2);
+      }
     }
   }
 
