@@ -8,7 +8,7 @@
     margin: 0;
   }
 
-  &.components-toggle-control {
+  & .components-toggle-control {
     padding: 1em 0;
   }
 }
@@ -24,6 +24,7 @@
     margin-bottom: 1rem;
     padding: 1rem 0;
     background: var(--rs-slider-background);
+    border: none;
 
     /* Inner container (if using Kadence or similar theme container wrappers) */
     > .timeline-slider-wrapper,
@@ -48,12 +49,14 @@
       }
     }
 
-    &.is-selected:not(:has(.wp-block[data-type="rs/timeline-slider-child"].is-selected)) 
+    /* Show first child if parent is selected but NO selected descendant anywhere inside */
+    &.is-selected:not(:has(.wp-block.is-selected, .wp-block.is-highlighted, .wp-block.has-child-selected, .wp-block.active))
     .block-editor-inner-blocks .wp-block[data-type="rs/timeline-slider-child"]:first-of-type {
       display: block;
     }
 
-    &:not(.is-selected):not(:has(.wp-block[data-type="rs/timeline-slider-child"].is-selected)) 
+    /* Show first child if neither parent nor any descendant selected/highlighted/active */
+    &:not(.is-selected):not(:has(.wp-block.is-selected, .wp-block.is-highlighted, .wp-block.has-child-selected, .wp-block.active))
     .block-editor-inner-blocks .wp-block[data-type="rs/timeline-slider-child"]:first-of-type {
       display: block;
     }
