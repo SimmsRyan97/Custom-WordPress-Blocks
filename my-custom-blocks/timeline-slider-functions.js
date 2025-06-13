@@ -142,43 +142,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const sliderRoot = document.querySelector('.wp-block-rs-timeline-slider');
     if (!sliderRoot) return;
 
-    // Create temp container for offscreen measurement
+    // Create fresh offscreen container
     const tempContainer = document.createElement('div');
     tempContainer.style.position = 'absolute';
     tempContainer.style.visibility = 'hidden';
     tempContainer.style.zIndex = '-1';
-    tempContainer.style.width = sliderRoot.offsetWidth + 'px'; // match width
+    tempContainer.style.width = sliderRoot.offsetWidth + 'px';
     tempContainer.style.top = '0';
     tempContainer.style.left = '0';
     document.body.appendChild(tempContainer);
 
-    // Clone the entire timeline-slider-wrapper (contains tabs, slides, arrows)
     const sliderWrapper = sliderRoot.querySelector('.timeline-slider-wrapper');
     if (!sliderWrapper) {
       tempContainer.remove();
       return;
     }
 
+    // Clone and clean up styles
     const clone = sliderWrapper.cloneNode(true);
-    clone.style.position = 'static'; // so it expands naturally
+    clone.querySelectorAll('[style]').forEach(el => el.style.minHeight = null); // Remove min-height from all styled children
+
+    clone.style.position = 'static';
     clone.style.opacity = '1';
     clone.style.visibility = 'visible';
     clone.style.pointerEvents = 'none';
-    clone.style.height = 'auto'; // remove any fixed height
+    clone.style.height = 'auto';
     clone.style.minHeight = '0';
     clone.style.maxHeight = 'none';
 
     tempContainer.appendChild(clone);
 
-    // Measure total height of clone
     const totalHeight = clone.offsetHeight;
 
-    // Apply min-height to all absolute elements
-    document.querySelectorAll('.wp-block-rs-timeline-slider, .slider-content-container, .slider-content-container .slide-wrap, .slider-content-container .content').forEach(el => {
-      el.style.minHeight = `${totalHeight}px`;
-    });
+    // Reset previous min-height before setting new one
+    const targets = document.querySelectorAll('.slider-content-container');
+    targets.forEach(el => el.style.minHeight = null);
+    targets.forEach(el => el.style.minHeight = `${totalHeight}px`);
 
-    // Clean up
     tempContainer.remove();
   }
 

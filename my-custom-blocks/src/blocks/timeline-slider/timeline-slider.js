@@ -23,6 +23,7 @@ import {
   ColorPickerCircle,
   UnitInputControl,
   formatValueWithUnit,
+  tabPanels,
 } from "../helper.js";
 import "./editor.scss";
 import "./style.scss";
@@ -86,13 +87,13 @@ const buildStyleVars = (attributes) => {
 };
 
 // Custom hook for managing editor styles
-const useEditorStyles = (blockId, activeSlideIndex, lastSelectedSlide) => {
+const useEditorStyles = (blockId, activeSlideIndex) => {
   const editorStyleId = `rs-timeline-editor-style-${blockId}`;
   
   useEffect(() => {
     if (!blockId) return;
 
-    const visibleIndex = activeSlideIndex ?? lastSelectedSlide;
+    const visibleIndex = activeSlideIndex ?? 1;
     const selector = `.wp-block-rs-timeline-slider.${blockId} > .block-editor-inner-blocks > .block-editor-block-list__layout > *`;
     
     const css = visibleIndex !== null 
@@ -119,7 +120,7 @@ const useEditorStyles = (blockId, activeSlideIndex, lastSelectedSlide) => {
         element.remove();
       }
     };
-  }, [blockId, activeSlideIndex, lastSelectedSlide, editorStyleId]);
+  }, [blockId, activeSlideIndex, editorStyleId]);
 };
 
 registerBlockType("rs/timeline-slider", {
@@ -127,8 +128,8 @@ registerBlockType("rs/timeline-slider", {
   icon: "schedule",
   category: "layout",
   attributes: {
+    blockTitle: { type: "string", default: ""},
     activeSlideIndex: { type: "number", default: 1 },
-    lastSelectedSlide: { type: "number", default: 1 },
     align: { type: "string" },
     innerContentWidth: { type: "boolean", default: false },
     background: { type: "string", default: "" },
@@ -171,8 +172,8 @@ registerBlockType("rs/timeline-slider", {
   
   edit({ attributes, setAttributes, clientId }) {
     const {
+      blockTitle,
       activeSlideIndex,
-      lastSelectedSlide,
       innerContentWidth,
       useIndividualBorders,
       tabBorderTopWidth,
@@ -247,14 +248,11 @@ registerBlockType("rs/timeline-slider", {
         const index = parentBlock.innerBlocks.findIndex(
           (inner) => inner.clientId === selectedBlockId
         );
-        if (index !== -1 && index !== lastSelectedSlide) {
-          setAttributes({ lastSelectedSlide: index });
-        }
       }
-    }, [selectedBlockId, blockId, clientId, lastSelectedSlide, setAttributes]);
+    }, [selectedBlockId, blockId, clientId, setAttributes]);
 
     // Use custom hook for editor styles
-    useEditorStyles(blockId, activeSlideIndex, lastSelectedSlide);
+    useEditorStyles(blockId, activeSlideIndex);
 
     // Memoized style calculations
     const editorStyles = useMemo(() => {
@@ -298,7 +296,6 @@ registerBlockType("rs/timeline-slider", {
     const goToSlide = useCallback((index) => {
       setAttributes({
         activeSlideIndex: index,
-        lastSelectedSlide: index,
       });
     }, [setAttributes]);
 
@@ -318,176 +315,194 @@ registerBlockType("rs/timeline-slider", {
     return (
       <>
         <InspectorControls>
-          <PanelBody 
-            className={ "rs-timeline-slider-styles" }
-            title={__("Styles")} 
-            initialOpen={true}
-            style={{ display: "grid", gap: "1em" }}
-          >
-            <ColorPickerCircle
-              label={__("Timeline Block Background")}
-              style={{ fontWeight: 'bold' }}
-              value={background}
-              onChange={(value) => setAttributes({ background: value })}
-            />
-            
-            <div>
-              <label><strong>{__("Tab Background")}</strong></label>
-              <div style={{ display: "flex", gap: "20px" }}>
-                <ColorPickerCircle
-                  label={__("Normal")}
-                  value={tabBackground}
-                  onChange={(value) => setAttributes({ tabBackground: value })}
-                />
-                <ColorPickerCircle
-                  label={__("Hover")}
-                  value={tabBackgroundHover}
-                  onChange={(value) => setAttributes({ tabBackgroundHover: value })}
-                />
-              </div>
-            </div>
+          <CustomTabPanel
+              className="my-tab-panel"
+              attributes={attributes}
+              setAttributes={setAttributes}
+              generalContent={
+                <>
+                  <TextControl
+                    label="Block Title"
+                    value={attributes.blockTitle}
+                    onChange={(val) => setAttributes({ blockTitle: val })}
+                  />
+                </>
+              }
+              styleContent={
+                <>
+                  <PanelBody 
+                    className={ "rs-timeline-slider-styles" }
+                    title={__("Styles")} 
+                    initialOpen={true}
+                    style={{ display: "grid", gap: "1em" }}
+                  >
+                    <ColorPickerCircle
+                      label={__("Timeline Block Background")}
+                      style={{ fontWeight: 'bold' }}
+                      value={background}
+                      onChange={(value) => setAttributes({ background: value })}
+                    />
+                    
+                    <div>
+                      <label><strong>{__("Tab Background")}</strong></label>
+                      <div style={{ display: "flex", gap: "20px" }}>
+                        <ColorPickerCircle
+                          label={__("Normal")}
+                          value={tabBackground}
+                          onChange={(value) => setAttributes({ tabBackground: value })}
+                        />
+                        <ColorPickerCircle
+                          label={__("Hover")}
+                          value={tabBackgroundHover}
+                          onChange={(value) => setAttributes({ tabBackgroundHover: value })}
+                        />
+                      </div>
+                    </div>
 
-            <ToggleControl
-              label={__("Use Individual Borders")}
-              checked={useIndividualBorders}
-              onChange={(val) => setAttributes({ useIndividualBorders: val })}
-            />
+                    <ToggleControl
+                      label={__("Use Individual Borders")}
+                      checked={useIndividualBorders}
+                      onChange={(val) => setAttributes({ useIndividualBorders: val })}
+                    />
 
-            {!useIndividualBorders && (
-              <>
-                <ColorPickerCircle
-                  label={__("Tab Border Colour")}
-                  value={tabBorderColor}
-                  onChange={(value) => setAttributes({ tabBorderColor: value })}
-                />
-                <UnitInputControl
-                  label={__("Border Width")}
-                  value={tabBorderWidth}
-                  unit={tabBorderWidthUnit}
-                  onChangeValue={(val) => setAttributes({ tabBorderWidth: val })}
-                  onChangeUnit={(unit) => setAttributes({ tabBorderWidthUnit: unit })}
-                />
-              </>
-            )}
+                    {!useIndividualBorders && (
+                      <>
+                        <ColorPickerCircle
+                          label={__("Tab Border Colour")}
+                          value={tabBorderColor}
+                          onChange={(value) => setAttributes({ tabBorderColor: value })}
+                        />
+                        <UnitInputControl
+                          label={__("Border Width")}
+                          value={tabBorderWidth}
+                          unit={tabBorderWidthUnit}
+                          onChangeValue={(val) => setAttributes({ tabBorderWidth: val })}
+                          onChangeUnit={(unit) => setAttributes({ tabBorderWidthUnit: unit })}
+                        />
+                      </>
+                    )}
 
-            {useIndividualBorders && (
-              <>
-                <UnitInputControl
-                  label={__("Top Border Width")}
-                  value={tabBorderTopWidth}
-                  unit={tabBorderTopWidthUnit}
-                  onChangeValue={(val) => setAttributes({ tabBorderTopWidth: val })}
-                  onChangeUnit={(unit) => setAttributes({ tabBorderTopWidthUnit: unit })}
-                />
-                <ColorPickerCircle
-                  label={__("Top Border Colour")}
-                  value={tabBorderTopColor}
-                  onChange={(value) => setAttributes({ tabBorderTopColor: value })}
-                />
-                <UnitInputControl
-                  label={__("Right Border Width")}
-                  value={tabBorderRightWidth}
-                  unit={tabBorderRightWidthUnit}
-                  onChangeValue={(val) => setAttributes({ tabBorderRightWidth: val })}
-                  onChangeUnit={(unit) => setAttributes({ tabBorderRightWidthUnit: unit })}
-                />
-                <ColorPickerCircle
-                  label={__("Right Border Colour")}
-                  value={tabBorderRightColor}
-                  onChange={(value) => setAttributes({ tabBorderRightColor: value })}
-                />
-                <UnitInputControl
-                  label={__("Bottom Border Width")}
-                  value={tabBorderBottomWidth}
-                  unit={tabBorderBottomWidthUnit}
-                  onChangeValue={(val) => setAttributes({ tabBorderBottomWidth: val })}
-                  onChangeUnit={(unit) => setAttributes({ tabBorderBottomWidthUnit: unit })}
-                />
-                <ColorPickerCircle
-                  label={__("Bottom Border Colour")}
-                  value={tabBorderBottomColor}
-                  onChange={(value) => setAttributes({ tabBorderBottomColor: value })}
-                />
-                <UnitInputControl
-                  label={__("Left Border Width")}
-                  value={tabBorderLeftWidth}
-                  unit={tabBorderLeftWidthUnit}
-                  onChangeValue={(val) => setAttributes({ tabBorderLeftWidth: val })}
-                  onChangeUnit={(unit) => setAttributes({ tabBorderLeftWidthUnit: unit })}
-                />
-                <ColorPickerCircle
-                  label={__("Left Border Colour")}
-                  value={tabBorderLeftColor}
-                  onChange={(value) => setAttributes({ tabBorderLeftColor: value })}
-                />
-              </>
-            )}
+                    {useIndividualBorders && (
+                      <>
+                        <UnitInputControl
+                          label={__("Top Border Width")}
+                          value={tabBorderTopWidth}
+                          unit={tabBorderTopWidthUnit}
+                          onChangeValue={(val) => setAttributes({ tabBorderTopWidth: val })}
+                          onChangeUnit={(unit) => setAttributes({ tabBorderTopWidthUnit: unit })}
+                        />
+                        <ColorPickerCircle
+                          label={__("Top Border Colour")}
+                          value={tabBorderTopColor}
+                          onChange={(value) => setAttributes({ tabBorderTopColor: value })}
+                        />
+                        <UnitInputControl
+                          label={__("Right Border Width")}
+                          value={tabBorderRightWidth}
+                          unit={tabBorderRightWidthUnit}
+                          onChangeValue={(val) => setAttributes({ tabBorderRightWidth: val })}
+                          onChangeUnit={(unit) => setAttributes({ tabBorderRightWidthUnit: unit })}
+                        />
+                        <ColorPickerCircle
+                          label={__("Right Border Colour")}
+                          value={tabBorderRightColor}
+                          onChange={(value) => setAttributes({ tabBorderRightColor: value })}
+                        />
+                        <UnitInputControl
+                          label={__("Bottom Border Width")}
+                          value={tabBorderBottomWidth}
+                          unit={tabBorderBottomWidthUnit}
+                          onChangeValue={(val) => setAttributes({ tabBorderBottomWidth: val })}
+                          onChangeUnit={(unit) => setAttributes({ tabBorderBottomWidthUnit: unit })}
+                        />
+                        <ColorPickerCircle
+                          label={__("Bottom Border Colour")}
+                          value={tabBorderBottomColor}
+                          onChange={(value) => setAttributes({ tabBorderBottomColor: value })}
+                        />
+                        <UnitInputControl
+                          label={__("Left Border Width")}
+                          value={tabBorderLeftWidth}
+                          unit={tabBorderLeftWidthUnit}
+                          onChangeValue={(val) => setAttributes({ tabBorderLeftWidth: val })}
+                          onChangeUnit={(unit) => setAttributes({ tabBorderLeftWidthUnit: unit })}
+                        />
+                        <ColorPickerCircle
+                          label={__("Left Border Colour")}
+                          value={tabBorderLeftColor}
+                          onChange={(value) => setAttributes({ tabBorderLeftColor: value })}
+                        />
+                      </>
+                    )}
 
-            <UnitInputControl
-              label={__("Border Radius")}
-              value={tabBorderRadius}
-              unit={tabBorderRadiusUnit}
-              onChangeValue={(val) => setAttributes({ tabBorderRadius: val })}
-              onChangeUnit={(unit) => setAttributes({ tabBorderRadiusUnit: unit })}
-            />
+                    <UnitInputControl
+                      label={__("Border Radius")}
+                      value={tabBorderRadius}
+                      unit={tabBorderRadiusUnit}
+                      onChangeValue={(val) => setAttributes({ tabBorderRadius: val })}
+                      onChangeUnit={(unit) => setAttributes({ tabBorderRadiusUnit: unit })}
+                    />
 
-            <div>
-              <label><strong>{__("Arrow Background")}</strong></label>
-              <div style={{ display: "flex", gap: "20px" }}>
-                <ColorPickerCircle
-                  label={__("Normal")}
-                  value={arrowBackground}
-                  onChange={(value) => setAttributes({ arrowBackground: value })}
-                />
-                <ColorPickerCircle
-                  label={__("Hover")}
-                  value={arrowBackgroundHover}
-                  onChange={(value) => setAttributes({ arrowBackgroundHover: value })}
-                />
-              </div>
-            </div>
+                    <div>
+                      <label><strong>{__("Arrow Background")}</strong></label>
+                      <div style={{ display: "flex", gap: "20px" }}>
+                        <ColorPickerCircle
+                          label={__("Normal")}
+                          value={arrowBackground}
+                          onChange={(value) => setAttributes({ arrowBackground: value })}
+                        />
+                        <ColorPickerCircle
+                          label={__("Hover")}
+                          value={arrowBackgroundHover}
+                          onChange={(value) => setAttributes({ arrowBackgroundHover: value })}
+                        />
+                      </div>
+                    </div>
 
-            <div>
-              <label><strong>{__("Arrow Text")}</strong></label>
-              <div style={{ display: "flex", gap: "20px" }}>
-                <ColorPickerCircle
-                  label={__("Normal")}
-                  value={arrowText}
-                  onChange={(value) => setAttributes({ arrowText: value })}
-                />
-                <ColorPickerCircle
-                  label={__("Hover")}
-                  value={arrowTextHover}
-                  onChange={(value) => setAttributes({ arrowTextHover: value })}
-                />
-              </div>
-            </div>
-          </PanelBody>
+                    <div>
+                      <label><strong>{__("Arrow Text")}</strong></label>
+                      <div style={{ display: "flex", gap: "20px" }}>
+                        <ColorPickerCircle
+                          label={__("Normal")}
+                          value={arrowText}
+                          onChange={(value) => setAttributes({ arrowText: value })}
+                        />
+                        <ColorPickerCircle
+                          label={__("Hover")}
+                          value={arrowTextHover}
+                          onChange={(value) => setAttributes({ arrowTextHover: value })}
+                        />
+                      </div>
+                    </div>
+                  </PanelBody>
 
-          <PanelBody title={__("Typography")} initialOpen={false}>
-            <SelectControl
-              label={__("Tab Font Family")}
-              value={tabFontFamily}
-              options={[
-                { label: "Body Font Family", value: "body" },
-                { label: "Heading Font Family", value: "heading" },
-              ]}
-              onChange={(value) => setAttributes({ tabFontFamily: value })}
-            />
-            <SelectControl
-              label={__("Tab Font Size")}
-              value={tabFontSize}
-              options={[
-                { label: "Small", value: "sm" },
-                { label: "Medium", value: "md" },
-                { label: "Large", value: "lg" },
-                { label: "XL", value: "xl" },
-                { label: "2XL", value: "2xl" },
-                { label: "3XL", value: "3xl" },
-              ]}
-              onChange={(value) => setAttributes({ tabFontSize: value })}
-            />
-          </PanelBody>
+                  <PanelBody title={__("Typography")} initialOpen={false}>
+                    <SelectControl
+                      label={__("Tab Font Family")}
+                      value={tabFontFamily}
+                      options={[
+                        { label: "Body Font Family", value: "body" },
+                        { label: "Heading Font Family", value: "heading" },
+                      ]}
+                      onChange={(value) => setAttributes({ tabFontFamily: value })}
+                    />
+                    <SelectControl
+                      label={__("Tab Font Size")}
+                      value={tabFontSize}
+                      options={[
+                        { label: "Small", value: "sm" },
+                        { label: "Medium", value: "md" },
+                        { label: "Large", value: "lg" },
+                        { label: "XL", value: "xl" },
+                        { label: "2XL", value: "2xl" },
+                        { label: "3XL", value: "3xl" },
+                      ]}
+                      onChange={(value) => setAttributes({ tabFontSize: value })}
+                    />
+                  </PanelBody>
+                </>
+              }
+              />
         </InspectorControls>
 
         <BlockControls>
@@ -568,8 +583,9 @@ registerBlockType("rs/timeline-slider", {
         <div
           {...blockProps}
           data-slider={true}
-          data-active-slide={attributes.activeSlideIndex ?? attributes.lastSelectedSlide ?? 1}
+          data-active-slide={attributes.activeSlideIndex ?? 1}
         >
+          blockTitle
           <div className={`timeline-slider-wrapper ${attributes.innerContentWidth ? "kb-theme-content-width" : ""}`}>
             <InnerBlocks.Content />
           </div>

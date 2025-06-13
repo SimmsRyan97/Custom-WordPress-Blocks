@@ -37,26 +37,56 @@
       width: 100%;
     }
 
-    /* Hide all child slides except active in the editor */
+    /* Step 1: Hide all */
     .block-editor-inner-blocks .wp-block[data-type="rs/timeline-slider-child"] {
       display: none;
-
-      &.is-selected,
-      &.has-child-selected,
-      &.active {
-        display: block;
-      }
     }
 
-    /* Show first child if parent is selected but NO selected descendant anywhere inside */
-    &.is-selected:not(:has(.wp-block.is-selected, .wp-block.is-highlighted, .wp-block.has-child-selected, .wp-block.active))
-    .block-editor-inner-blocks .wp-block[data-type="rs/timeline-slider-child"]:first-of-type {
+    /* Step 2: Show highlighted if no selected block exists */
+    &:has(.wp-block[data-type="rs/timeline-slider-child"].is-highlighted):not(:has(
+      .wp-block[data-type="rs/timeline-slider-child"].is-selected,
+      .wp-block[data-type="rs/timeline-slider-child"].has-child-selected
+    ))
+    .block-editor-inner-blocks
+    .wp-block[data-type="rs/timeline-slider-child"].is-highlighted {
       display: block;
     }
 
-    /* Show first child if neither parent nor any descendant selected/highlighted/active */
-    &:not(.is-selected):not(:has(.wp-block.is-selected, .wp-block.is-highlighted, .wp-block.has-child-selected, .wp-block.active))
-    .block-editor-inner-blocks .wp-block[data-type="rs/timeline-slider-child"]:first-of-type {
+    /* Step 3: Show selected or has-child-selected */
+    &:has(
+      .wp-block[data-type="rs/timeline-slider-child"].is-selected,
+      .wp-block[data-type="rs/timeline-slider-child"].has-child-selected
+    )
+    .block-editor-inner-blocks
+    .wp-block[data-type="rs/timeline-slider-child"].is-selected,
+    &:has(
+      .wp-block[data-type="rs/timeline-slider-child"].is-selected,
+      .wp-block[data-type="rs/timeline-slider-child"].has-child-selected
+    )
+    .block-editor-inner-blocks
+    .wp-block[data-type="rs/timeline-slider-child"].has-child-selected {
+      display: block;
+    }
+
+    /* Step 4: Show first if parent selected, but no child interaction */
+    &.is-selected:not(:has(
+      .wp-block[data-type="rs/timeline-slider-child"].is-selected,
+      .wp-block[data-type="rs/timeline-slider-child"].has-child-selected,
+      .wp-block[data-type="rs/timeline-slider-child"].is-highlighted
+    ))
+    .block-editor-inner-blocks
+    .wp-block[data-type="rs/timeline-slider-child"]:first-of-type {
+      display: block;
+    }
+
+    /* Step 5: Show first if nothing is selected/highlighted at all */
+    &:not(.is-selected):not(:has(
+      .wp-block[data-type="rs/timeline-slider-child"].is-selected,
+      .wp-block[data-type="rs/timeline-slider-child"].has-child-selected,
+      .wp-block[data-type="rs/timeline-slider-child"].is-highlighted
+    ))
+    .block-editor-inner-blocks
+    .wp-block[data-type="rs/timeline-slider-child"]:first-of-type {
       display: block;
     }
   }

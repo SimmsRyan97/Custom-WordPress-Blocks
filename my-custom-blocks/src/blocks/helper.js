@@ -3,9 +3,14 @@ import {
   SelectControl,
   TextControl,
   ColorPalette,
+  TabPanel,
 } from '@wordpress/components';
 
+import { __ } from '@wordpress/i18n';
+
 import { useSetting } from '@wordpress/block-editor';
+
+import { blockDefault, adminCustomizer, ellipsis } from '@wordpress/icons';
 
 // Using Kadence font map
 const fontSizeMap = {
@@ -106,10 +111,86 @@ const UnitInputControl = ({ label, value, unit, onChangeValue, onChangeUnit }) =
     </div>
 );
 
+const CustomTabPanel = ({
+  className = '',
+  generalContent = null,
+  styleContent = null,
+  advancedContent = null,
+  attributes,
+  setAttributes,
+}) => (
+  <TabPanel
+    className={className}
+    activeClass="active-tab"
+    tabs={[
+      {
+        name: 'general',
+        title: (
+          <>
+            {blockDefault} {__('General')}
+          </>
+        ),
+        className: 'tab-general',
+      },
+      {
+        name: 'style',
+        title: (
+          <>
+            {adminCustomizer} {__('Style')}
+          </>
+        ),
+        className: 'tab-style',
+      },
+      {
+        name: 'advanced',
+        title: (
+          <>
+            {ellipsis} {__('Advanced')}
+          </>
+        ),
+        className: 'tab-advanced',
+      },
+    ]}
+  >
+    {(tab) => {
+      switch (tab.name) {
+        case 'general':
+          return <PanelBody title={__('General Settings')}>{generalContent}</PanelBody>;
+
+        case 'style':
+          return <PanelBody title={__('Styles')}>{styleContent}</PanelBody>;
+
+        case 'advanced':
+          return (
+            <PanelBody title={__('Advanced Settings')}>
+              {advancedContent}
+              <TextControl
+                label={__('HTML Anchor')}
+                help={__('Specify a unique ID for the block (e.g., "my-block-id").')}
+                value={attributes?.htmlAnchor}
+                onChange={(val) => setAttributes({ htmlAnchor: val })}
+              />
+              <TextControl
+                label={__('Additional CSS Class(es)')}
+                help={__('Add extra CSS class names for custom styling. Separate with spaces.')}
+                value={attributes?.extraClassNames}
+                onChange={(val) => setAttributes({ extraClassNames: val })}
+              />
+            </PanelBody>
+          );
+
+        default:
+          return null;
+      }
+    }}
+  </TabPanel>
+);
+
 export {
   fontSizeMap,
   checkerboardStyle,
   ColorPickerCircle,
   UnitInputControl,
   formatValueWithUnit,
+  CustomTabPanel,
 };
