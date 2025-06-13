@@ -38,7 +38,7 @@ const formatValueWithUnit = (val, unit = 'px') => {
 const ColorPickerCircle = ({ value, onChange, label }) => {
     const themeColors = useSetting( 'color.palette.theme' );
     return (
-        <div style={{ display: 'grid', gap: '1em' }}>
+        <div style={{ display: 'grid', gap: '1em', padding: '1em 0'}}>
             <label style={{ display: 'block', fontSize: '0.85rem' }}>{label}</label>
             <DropdownMenu
                 icon={null}
@@ -76,7 +76,7 @@ const ColorPickerCircle = ({ value, onChange, label }) => {
 
 // Unit + value input control
 const UnitInputControl = ({ label, value, unit, onChangeValue, onChangeUnit }) => (
-    <div>
+    <div style={{ display: 'grid', gap: '0.5em', marginBottom: '0.25em' }}>
         <label style={{ fontWeight: '600', display: 'block', marginBottom: '0.25em' }}>{label}</label>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5em' }}>
             <TextControl

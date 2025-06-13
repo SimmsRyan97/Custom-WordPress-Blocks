@@ -1,6 +1,6 @@
 {
   "name": "rs-blocks",
-  "version": "1.1.37",
+  "version": "1.1.38",
   "main": "index.js",
   "scripts": {
     "build": "wp-scripts build",

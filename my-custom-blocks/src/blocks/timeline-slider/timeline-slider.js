@@ -319,18 +319,20 @@ registerBlockType("rs/timeline-slider", {
       <>
         <InspectorControls>
           <PanelBody 
+            className={ "rs-timeline-slider-styles" }
             title={__("Styles")} 
             initialOpen={true}
             style={{ display: "grid", gap: "1em" }}
           >
             <ColorPickerCircle
-              label={__("Block Background")}
+              label={__("Timeline Block Background")}
+              style={{ fontWeight: 'bold' }}
               value={background}
               onChange={(value) => setAttributes({ background: value })}
             />
             
             <div>
-              <label>{__("Tab Background")}</label>
+              <label><strong>{__("Tab Background")}</strong></label>
               <div style={{ display: "flex", gap: "20px" }}>
                 <ColorPickerCircle
                   label={__("Normal")}
@@ -430,7 +432,7 @@ registerBlockType("rs/timeline-slider", {
             />
 
             <div>
-              <label>{__("Arrow Background")}</label>
+              <label><strong>{__("Arrow Background")}</strong></label>
               <div style={{ display: "flex", gap: "20px" }}>
                 <ColorPickerCircle
                   label={__("Normal")}
@@ -446,7 +448,7 @@ registerBlockType("rs/timeline-slider", {
             </div>
 
             <div>
-              <label>{__("Arrow Text")}</label>
+              <label><strong>{__("Arrow Text")}</strong></label>
               <div style={{ display: "flex", gap: "20px" }}>
                 <ColorPickerCircle
                   label={__("Normal")}
@@ -561,7 +563,7 @@ registerBlockType("rs/timeline-slider", {
     return (
       <>
         <style>
-          {`.timeline-slider[data-slider="true"] { ${cssVars} }`}
+          {`.wp-block-rs-timeline-slider { ${cssVars} }`}
         </style>
         <div
           {...blockProps}

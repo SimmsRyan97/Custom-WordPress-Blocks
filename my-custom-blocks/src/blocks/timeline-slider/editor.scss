@@ -1,18 +1,16 @@
 /* Define CSS variables for slider editor styling */
 :root {
   --rs-slider-background: transparent;
-  --rs-slider-tab-font-size: 1rem;
-  --rs-slider-tab-font-family: inherit;
-  --rs-slider-tab-border-width: 0;
-  --rs-slider-tab-border-color: transparent;
-  --rs-slider-tab-border-radius: 4px;
-  --rs-slider-tab-background: #f0f0f0;
-  --rs-slider-tab-background-hover: #e2e2e2;
-  --rs-slider-tab-background-active: #d6d6d6;
-  --rs-slider-arrow-background: #f0f0f0;
-  --rs-slider-arrow-text: #333;
-  --rs-slider-arrow-background-hover: #e2e2e2;
-  --rs-slider-arrow-text-hover: #000;
+}
+
+.rs-timeline-slider-styles {
+  & .components-base-control {
+    margin: 0;
+  }
+
+  &.components-toggle-control {
+    padding: 1em 0;
+  }
 }
 
 /* Editor styles wrapper */
@@ -26,8 +24,6 @@
     margin-bottom: 1rem;
     padding: 1rem 0;
     background: var(--rs-slider-background);
-    border: 1px solid #ddd;
-    border-radius: 4px;
 
     /* Inner container (if using Kadence or similar theme container wrappers) */
     > .timeline-slider-wrapper,
@@ -45,9 +41,21 @@
       display: none;
 
       &.is-selected,
+      &.is-highlighted,
+      &.has-child-selected,
       &.active {
         display: block;
       }
+    }
+
+    &.is-selected:not(:has(.wp-block[data-type="rs/timeline-slider-child"].is-selected)) 
+    .block-editor-inner-blocks .wp-block[data-type="rs/timeline-slider-child"]:first-of-type {
+      display: block;
+    }
+
+    &:not(.is-selected):not(:has(.wp-block[data-type="rs/timeline-slider-child"].is-selected)) 
+    .block-editor-inner-blocks .wp-block[data-type="rs/timeline-slider-child"]:first-of-type {
+      display: block;
     }
   }
 

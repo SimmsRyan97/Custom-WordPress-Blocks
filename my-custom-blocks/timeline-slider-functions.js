@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const sliderRoot = document.querySelector('.timeline-slider[data-slider="true"]');
+  const sliderRoot = document.querySelector('.wp-block-rs-timeline-slider');
   if (!sliderRoot) return;
 
   const slides = Array.from(sliderRoot.querySelectorAll('.slide'));
@@ -7,28 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const SLIDES_PER_GROUP = 3;
   const totalGroups = Math.ceil(slides.length / SLIDES_PER_GROUP);
-
-  // Get max height among all slides
-  function getMaxHeight(slides) {
-    let maxHeight = 0;
-    slides.forEach(slide => {
-      const origDisplay = slide.style.display;
-      const origPos = slide.style.position;
-
-      slide.style.display = 'block';
-      slide.style.position = 'relative';
-
-      const h = slide.offsetHeight;
-      if (h > maxHeight) maxHeight = h;
-
-      slide.style.display = origDisplay;
-      slide.style.position = origPos;
-    });
-    return maxHeight;
-  }
-
-  const maxHeight = getMaxHeight(slides);
-
   const sliderWrapper = sliderRoot.querySelector('.timeline-slider-wrapper');
   if (!sliderWrapper) return;
 
@@ -52,18 +30,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const slideWrap = document.createElement('div');
     slideWrap.className = 'slide-wrap';
-    slideWrap.style.position = 'absolute';
-    slideWrap.style.top = 0;
-    slideWrap.style.left = 0;
-    slideWrap.style.width = '100%';
 
     const tabsContainer = document.createElement('div');
     tabsContainer.className = 'tabs';
 
     const contentTabsContainer = document.createElement('div');
     contentTabsContainer.className = 'content';
-    contentTabsContainer.style.minHeight = maxHeight + 'px';
-    contentTabsContainer.style.position = 'relative';
 
     const usedSlideIds = new Set();
 
@@ -80,13 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
       slide.setAttribute('data-slide-id', slideId);
       slide.setAttribute('data-title', slideTitle);
       slide.classList.add('fade-slide');
-      slide.style.position = 'absolute';
-      slide.style.top = 0;
-      slide.style.left = 0;
-      slide.style.width = '100%';
-      slide.style.transition = 'opacity 0.4s ease';
-      slide.style.opacity = index === 0 ? '1' : '0';
       slide.dataset.active = index === 0 ? 'true' : 'false';
+      if (index === 0) slide.classList.add('active');
 
       const tabBtn = document.createElement('button');
       tabBtn.type = 'button';
@@ -101,13 +68,9 @@ document.addEventListener('DOMContentLoaded', () => {
         tabBtn.classList.add('active');
 
         groupSlides.forEach(s => {
-          if (s.getAttribute('data-slide-id') === slideId) {
-            s.style.opacity = '1';
-            s.dataset.active = 'true';
-          } else {
-            s.style.opacity = '0';
-            s.dataset.active = 'false';
-          }
+          const isTarget = s.getAttribute('data-slide-id') === slideId;
+          s.classList.toggle('active', isTarget);
+          s.dataset.active = isTarget ? 'true' : 'false';
         });
       });
 
@@ -120,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
     groups.push(slideWrap);
   }
 
-  // Nav arrows
   let navWrapper, prevBtn, nextBtn;
   if (slides.length > SLIDES_PER_GROUP) {
     navWrapper = document.createElement('div');
@@ -139,11 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     navWrapper.appendChild(nextBtn);
   }
 
-  // Append groups
   groups.forEach(group => {
-    group.style.opacity = '0';
-    group.style.pointerEvents = 'none';
-    group.style.transition = 'opacity 0.4s ease';
     contentContainer.appendChild(group);
   });
 
@@ -160,15 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showGroup(index) {
     groups.forEach((group, i) => {
-      if (i === index) {
-        group.classList.add('active');
-        group.style.opacity = '1';
-        group.style.pointerEvents = 'auto';
-      } else {
-        group.classList.remove('active');
-        group.style.opacity = '0';
-        group.style.pointerEvents = 'none';
-      }
+      group.classList.toggle('active', i === index);
     });
 
     currentGroup = index;
@@ -180,17 +130,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (prevBtn && nextBtn) {
     prevBtn.addEventListener('click', () => {
-      if (currentGroup > 0) {
-        showGroup(--currentGroup);
-      }
+      if (currentGroup > 0) showGroup(--currentGroup);
     });
 
     nextBtn.addEventListener('click', () => {
-      if (currentGroup < groups.length - 1) {
-        showGroup(++currentGroup);
-      }
+      if (currentGroup < groups.length - 1) showGroup(++currentGroup);
     });
   }
+
+  function updateSlideHeights() {
+    const sliderRoot = document.querySelector('.wp-block-rs-timeline-slider');
+    if (!sliderRoot) return;
+
+    // Create temp container for offscreen measurement
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.visibility = 'hidden';
+    tempContainer.style.zIndex = '-1';
+    tempContainer.style.width = sliderRoot.offsetWidth + 'px'; // match width
+    tempContainer.style.top = '0';
+    tempContainer.style.left = '0';
+    document.body.appendChild(tempContainer);
+
+    // Clone the entire timeline-slider-wrapper (contains tabs, slides, arrows)
+    const sliderWrapper = sliderRoot.querySelector('.timeline-slider-wrapper');
+    if (!sliderWrapper) {
+      tempContainer.remove();
+      return;
+    }
+
+    const clone = sliderWrapper.cloneNode(true);
+    clone.style.position = 'static'; // so it expands naturally
+    clone.style.opacity = '1';
+    clone.style.visibility = 'visible';
+    clone.style.pointerEvents = 'none';
+    clone.style.height = 'auto'; // remove any fixed height
+    clone.style.minHeight = '0';
+    clone.style.maxHeight = 'none';
+
+    tempContainer.appendChild(clone);
+
+    // Measure total height of clone
+    const totalHeight = clone.offsetHeight;
+
+    // Apply min-height to all absolute elements
+    document.querySelectorAll('.wp-block-rs-timeline-slider, .slider-content-container, .slider-content-container .slide-wrap, .slider-content-container .content').forEach(el => {
+      el.style.minHeight = `${totalHeight}px`;
+    });
+
+    // Clean up
+    tempContainer.remove();
+  }
+
+  updateSlideHeights();
+  window.addEventListener('resize', updateSlideHeights);
 
   showGroup(0);
 });
