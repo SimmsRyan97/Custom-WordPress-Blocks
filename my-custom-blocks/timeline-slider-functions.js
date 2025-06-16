@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sliderWrapper = sliderRoot.querySelector('.timeline-slider-wrapper');
   if (!sliderWrapper) return;
 
+  // Clear original slides
   slides.forEach(slide => slide.remove());
 
   let contentContainer = sliderRoot.querySelector('.slider-content-container');
@@ -79,35 +80,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     slideWrap.appendChild(tabsContainer);
+
+    // Add arrows under tabs if totalGroups > 1
+    if (totalGroups > 1) {
+      const navWrapper = document.createElement('div');
+      navWrapper.className = 'nav-arrows group-nav';
+
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'prev';
+      prevBtn.textContent = '←';
+
+      const timeline = document.createElement('hr');
+
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'next';
+      nextBtn.textContent = '→';
+
+      navWrapper.appendChild(prevBtn);
+      navWrapper.appendChild(timeline);
+      navWrapper.appendChild(nextBtn);
+      slideWrap.appendChild(navWrapper);
+
+      prevBtn.addEventListener('click', () => {
+        if (currentGroup > 0) {
+          showGroup(currentGroup - 1);
+        }
+      });
+
+      nextBtn.addEventListener('click', () => {
+        if (currentGroup < totalGroups - 1) {
+          showGroup(currentGroup + 1);
+        }
+      });
+    }
+
     slideWrap.appendChild(contentTabsContainer);
     groups.push(slideWrap);
   }
 
-  let navWrapper, prevBtn, nextBtn;
-  if (slides.length > SLIDES_PER_GROUP) {
-    navWrapper = document.createElement('div');
-    navWrapper.className = 'nav-arrows';
-
-    prevBtn = document.createElement('button');
-    prevBtn.className = 'prev';
-    prevBtn.textContent = '←';
-    prevBtn.disabled = true;
-
-    nextBtn = document.createElement('button');
-    nextBtn.className = 'next';
-    nextBtn.textContent = '→';
-
-    navWrapper.appendChild(prevBtn);
-    navWrapper.appendChild(nextBtn);
-  }
-
+  // Add all groups to content container
   groups.forEach(group => {
     contentContainer.appendChild(group);
   });
-
-  if (navWrapper) {
-    contentContainer.appendChild(navWrapper);
-  }
 
   document.querySelectorAll('.timeline-slider-wrapper .tabs').forEach(tabs => {
     const count = tabs.querySelectorAll('button').length;
@@ -119,30 +133,24 @@ document.addEventListener('DOMContentLoaded', () => {
   function showGroup(index) {
     groups.forEach((group, i) => {
       group.classList.toggle('active', i === index);
-    });
 
+      const prevBtn = group.querySelector('.nav-arrows .prev');
+      const nextBtn = group.querySelector('.nav-arrows .next');
+      if (prevBtn && nextBtn) {
+        prevBtn.disabled = index === 0;
+        nextBtn.disabled = index === totalGroups - 1;
+      }
+    });
     currentGroup = index;
-    if (prevBtn && nextBtn) {
-      prevBtn.disabled = index === 0;
-      nextBtn.disabled = index === groups.length - 1;
-    }
   }
 
-  if (prevBtn && nextBtn) {
-    prevBtn.addEventListener('click', () => {
-      if (currentGroup > 0) showGroup(--currentGroup);
-    });
-
-    nextBtn.addEventListener('click', () => {
-      if (currentGroup < groups.length - 1) showGroup(++currentGroup);
-    });
-  }
+  // Show initial group
+  showGroup(0);
 
   function updateSlideHeights() {
     const sliderRoot = document.querySelector('.wp-block-rs-timeline-slider');
     if (!sliderRoot) return;
 
-    // Create fresh offscreen container
     const tempContainer = document.createElement('div');
     tempContainer.style.position = 'absolute';
     tempContainer.style.visibility = 'hidden';
@@ -158,9 +166,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Clone and clean up styles
     const clone = sliderWrapper.cloneNode(true);
-    clone.querySelectorAll('[style]').forEach(el => el.style.minHeight = null); // Remove min-height from all styled children
+    clone.querySelectorAll('[style]').forEach(el => el.style.minHeight = null);
 
     clone.style.position = 'static';
     clone.style.opacity = '1';
@@ -174,7 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const totalHeight = clone.offsetHeight;
 
-    // Reset previous min-height before setting new one
     const targets = document.querySelectorAll('.slider-content-container');
     targets.forEach(el => el.style.minHeight = null);
     targets.forEach(el => el.style.minHeight = `${totalHeight}px`);
@@ -184,6 +190,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateSlideHeights();
   window.addEventListener('resize', updateSlideHeights);
-
-  showGroup(0);
 });

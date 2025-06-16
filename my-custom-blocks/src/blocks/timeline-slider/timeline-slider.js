@@ -14,6 +14,7 @@ import {
   ToolbarButton,
   DropdownMenu,
   SelectControl,
+  TextControl,
 } from "@wordpress/components";
 import { plus, chevronDown } from "@wordpress/icons";
 import { useSelect, useDispatch } from "@wordpress/data";
@@ -23,7 +24,7 @@ import {
   ColorPickerCircle,
   UnitInputControl,
   formatValueWithUnit,
-  tabPanels,
+  CustomTabPanel,
 } from "../helper.js";
 import "./editor.scss";
 import "./style.scss";
@@ -35,6 +36,7 @@ const ALLOWED_BLOCKS = ["rs/timeline-slider-child"];
 const buildStyleVars = (attributes) => {
   const baseVars = {
     [`${VAR_PREFIX}background`]: attributes.background || undefined,
+    [`${VAR_PREFIX}title-color`]: attributes.titleColor || undefined,
     [`${VAR_PREFIX}tab-background`]: attributes.tabBackground || undefined,
     [`${VAR_PREFIX}tab-background-hover`]: attributes.tabBackgroundHover || undefined,
     [`${VAR_PREFIX}arrow-background`]: attributes.arrowBackground || undefined,
@@ -87,13 +89,13 @@ const buildStyleVars = (attributes) => {
 };
 
 // Custom hook for managing editor styles
-const useEditorStyles = (blockId, activeSlideIndex) => {
+const useEditorStyles = (blockId) => {
   const editorStyleId = `rs-timeline-editor-style-${blockId}`;
   
   useEffect(() => {
     if (!blockId) return;
 
-    const visibleIndex = activeSlideIndex ?? 1;
+    const visibleIndex = blockId ?? 1;
     const selector = `.wp-block-rs-timeline-slider.${blockId} > .block-editor-inner-blocks > .block-editor-block-list__layout > *`;
     
     const css = visibleIndex !== null 
@@ -120,19 +122,18 @@ const useEditorStyles = (blockId, activeSlideIndex) => {
         element.remove();
       }
     };
-  }, [blockId, activeSlideIndex, editorStyleId]);
+  }, [blockId, editorStyleId]);
 };
 
 registerBlockType("rs/timeline-slider", {
   title: "Timeline Slider",
-  icon: "schedule",
+  icon: "slides",
   category: "layout",
   attributes: {
     blockTitle: { type: "string", default: ""},
-    activeSlideIndex: { type: "number", default: 1 },
-    align: { type: "string" },
     innerContentWidth: { type: "boolean", default: false },
     background: { type: "string", default: "" },
+    titleColor: {type: "string", default: "" },
     tabBackground: { type: "string", default: "" },
     tabBackgroundHover: { type: "string", default: "" },
     tabFontFamily: { type: "string", default: "heading" },
@@ -160,11 +161,20 @@ registerBlockType("rs/timeline-slider", {
     arrowText: { type: "string", default: "" },
     arrowTextHover: { type: "string", default: "" },
     blockId: { type: "string" },
+    align: { type: "string" },
+    htmlAnchor: { type: "string", default: "" },
+    extraClassNames: { type: "string", default: "" },
   },
   supports: {
     align: ["wide", "full", "center"],
-    anchor: true,
-    spacing: { margin: true, padding: true },
+    typography: false,
+    color: false,
+    spacing: false,
+    border: false,
+    dimensions: false,
+    style: false,
+    anchor: false,
+    customClassName: false,
     __experimentalLayout: true,
     __experimentalVerticalAlignment: true,
     inserter: true,
@@ -173,7 +183,6 @@ registerBlockType("rs/timeline-slider", {
   edit({ attributes, setAttributes, clientId }) {
     const {
       blockTitle,
-      activeSlideIndex,
       innerContentWidth,
       useIndividualBorders,
       tabBorderTopWidth,
@@ -202,7 +211,10 @@ registerBlockType("rs/timeline-slider", {
       arrowText,
       arrowTextHover,
       background,
+      titleColor,
       blockId,
+      htmlAnchor,
+      extraClassNames,
     } = attributes;
 
     const { insertBlocks } = useDispatch("core/block-editor");
@@ -252,7 +264,7 @@ registerBlockType("rs/timeline-slider", {
     }, [selectedBlockId, blockId, clientId, setAttributes]);
 
     // Use custom hook for editor styles
-    useEditorStyles(blockId, activeSlideIndex);
+    useEditorStyles(blockId);
 
     // Memoized style calculations
     const editorStyles = useMemo(() => {
@@ -274,58 +286,52 @@ registerBlockType("rs/timeline-slider", {
         [`${VAR_PREFIX}arrow-text`]: arrowText || "#333",
         [`${VAR_PREFIX}arrow-text-hover`]: arrowTextHover || "#000",
         [`${VAR_PREFIX}background`]: background || "transparent",
-        [`${VAR_PREFIX}active-slide`]: activeSlideIndex || 1,
+        [`${VAR_PREFIX}title-color`]: titleColor || "black",
       };
     }, [
       tabBackground, tabBackgroundHover, tabFontSize, tabFontFamily,
       tabBorderWidth, tabBorderWidthUnit, tabBorderColor,
       tabBorderRadius, tabBorderRadiusUnit, arrowBackground,
-      arrowBackgroundHover, arrowText, arrowTextHover, background, activeSlideIndex
+      arrowBackgroundHover, arrowText, arrowTextHover,
+      background, titleColor,
     ]);
 
-    const clampedIndex = Math.max(0, Math.min(activeSlideIndex ?? 0, innerBlocks.length - 1));
-
     const blockProps = useBlockProps({
-      className: `timeline-slider-editor ${blockId || ""}`,
+      id: htmlAnchor || '',
+      className: [
+        'timeline-slider-editor',
+        blockId || '',
+        extraClassNames || '',
+      ].filter(Boolean).join(' '),
       style: editorStyles,
-      "data-active-slide": activeSlideIndex || 1,
-      "data-slider": true,
+      'data-slider': true,
     });
-
-    // Memoized callback functions
-    const goToSlide = useCallback((index) => {
-      setAttributes({
-        activeSlideIndex: index,
-      });
-    }, [setAttributes]);
 
     const addNewSlide = useCallback(() => {
       const newBlock = createBlock("rs/timeline-slider-child");
       insertBlocks(newBlock, undefined, clientId);
     }, [insertBlocks, clientId]);
 
-    const goToPreviousSlide = useCallback(() => {
-      goToSlide(Math.max(clampedIndex - 1, 0));
-    }, [goToSlide, clampedIndex]);
-
-    const goToNextSlide = useCallback(() => {
-      goToSlide(Math.min(clampedIndex + 1, innerBlocks.length - 1));
-    }, [goToSlide, clampedIndex, innerBlocks.length]);
-
     return (
       <>
         <InspectorControls>
           <CustomTabPanel
-              className="my-tab-panel"
+              className="rs-slider-tabs"
               attributes={attributes}
               setAttributes={setAttributes}
               generalContent={
                 <>
+                  <PanelBody 
+                    className={ "rs-timeline-general" }
+                    title={__("Styles")} 
+                    initialOpen={true}
+                  >
                   <TextControl
-                    label="Block Title"
-                    value={attributes.blockTitle}
+                    label="Timeline Title"
+                    value={blockTitle}
                     onChange={(val) => setAttributes({ blockTitle: val })}
                   />
+                  </PanelBody>
                 </>
               }
               styleContent={
@@ -334,13 +340,17 @@ registerBlockType("rs/timeline-slider", {
                     className={ "rs-timeline-slider-styles" }
                     title={__("Styles")} 
                     initialOpen={true}
-                    style={{ display: "grid", gap: "1em" }}
                   >
                     <ColorPickerCircle
                       label={__("Timeline Block Background")}
-                      style={{ fontWeight: 'bold' }}
                       value={background}
                       onChange={(value) => setAttributes({ background: value })}
+                    />
+
+                    <ColorPickerCircle
+                      label={__("Title Colour")}
+                      value={titleColor}
+                      onChange={(value) => setAttributes({ titleColor: value })}
                     />
                     
                     <div>
@@ -530,24 +540,11 @@ registerBlockType("rs/timeline-slider", {
               )}
             </DropdownMenu>
           </ToolbarGroup>
-          <ToolbarGroup>
-            <ToolbarButton
-              icon="arrow-left-alt"
-              label="Previous Slide"
-              onClick={goToPreviousSlide}
-              disabled={clampedIndex === 0}
-            />
-            <ToolbarButton
-              icon="arrow-right-alt"
-              label="Next Slide"
-              onClick={goToNextSlide}
-              disabled={clampedIndex === innerBlocks.length - 1}
-            />
-          </ToolbarGroup>
         </BlockControls>
 
         <div {...blockProps}>
           <div className={`timeline-slider-wrapper ${innerContentWidth ? "kb-theme-content-width" : ""}`}>
+            <h2 className={'timeline-slider-title'}>{blockTitle}</h2>
             <InnerBlocks
               templateLock={false}
               template={[["rs/timeline-slider-child", {}]]}
@@ -567,26 +564,39 @@ registerBlockType("rs/timeline-slider", {
   },
 
   save({ attributes }) {
-    const blockProps = useBlockProps.save();
+    const {
+      htmlAnchor,
+      extraClassNames,
+      blockTitle,
+      innerContentWidth,
+      blockId,
+    } = attributes;
+
     const styleVars = buildStyleVars(attributes);
-    
     const cssVars = Object.entries(styleVars)
       .filter(([_, val]) => val !== undefined && val !== "")
       .map(([key, val]) => `${key}: ${val};`)
       .join(" ");
+
+    const blockProps = useBlockProps.save({
+      id: htmlAnchor || '',
+      className: [
+        blockId || '',
+        extraClassNames || '',
+      ]
+        .filter(Boolean)
+        .join(' '),
+      'data-slider': true,
+    });
 
     return (
       <>
         <style>
           {`.wp-block-rs-timeline-slider { ${cssVars} }`}
         </style>
-        <div
-          {...blockProps}
-          data-slider={true}
-          data-active-slide={attributes.activeSlideIndex ?? 1}
-        >
-          blockTitle
-          <div className={`timeline-slider-wrapper ${attributes.innerContentWidth ? "kb-theme-content-width" : ""}`}>
+        <div {...blockProps}>
+          <div className={`timeline-slider-wrapper ${innerContentWidth ? "kb-theme-content-width" : ""}`}>
+            <h2 className="timeline-slider-title">{blockTitle}</h2>
             <InnerBlocks.Content />
           </div>
         </div>

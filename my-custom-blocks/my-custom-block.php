@@ -2,7 +2,7 @@
 /*
 Plugin Name: Ryan Simms Custom Blocks
 Description: Custom Gutenberg blocks.
-Version: 1.1.38
+Version: 1.1.42
 Author: Ryan Simms
 */
 
@@ -45,16 +45,7 @@ function rs_blocks_register_block() {
                 'style'         => 'rs-blocks-style',
             )
         );
-    }
-
-    // Additional scripts for functionality
-    wp_enqueue_script(
-        'remove-advanced-panel-script',
-        plugins_url( 'remove-advanced-panel.js', __FILE__ ),
-        array( 'wp-blocks', 'wp-dom-ready', 'wp-edit-post' ),
-        null,
-        true
-    );    
+    }   
 }
 
 add_action( 'init', 'rs_blocks_register_block' );

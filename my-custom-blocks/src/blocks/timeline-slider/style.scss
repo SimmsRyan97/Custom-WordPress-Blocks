@@ -2,6 +2,12 @@
   width: 100%;
   position: relative;
   background: var(--rs-slider-background, transparent);
+  padding: 1rem 0;
+
+  h2 {
+    text-align: center;
+    color: var(--rs-slider-title-color, black);
+  }
 
   &.alignfull > .timeline-slider-wrapper {
     padding-left: var(--global-content-edge-padding, 15px);
@@ -108,11 +114,14 @@
   }
 
   .nav-arrows {
-    position: absolute;
-    bottom: 1rem;
     width: 100%;
     display: flex;
     justify-content: space-between;
+    padding: 1rem 0;
+    position: relative;
+    z-index: 1;
+    gap: 1rem;
+    align-items: center;
 
     button {
       background-color: var(--rs-slider-arrow-background, #f0f0f0);
@@ -123,6 +132,7 @@
       cursor: pointer;
       padding: 0.5rem 1rem;
       transition: background-color 0.3s ease, color 0.3s ease;
+      box-shadow: 0px 2px 4px 2px rgba(0, 0, 0, 0.1);
 
       &:hover:not(:disabled) {
         background-color: var(--rs-slider-arrow-background-hover, #ddd);
@@ -133,6 +143,15 @@
         opacity: 0.6;
         cursor: default;
       }
+    }
+
+    hr {
+      display: block;
+      border-color: var(--rs-slider-arrow-background, #f0f0f0);
+      border-width: 1px;
+      margin: 0;
+      height: 0;
+      width: 100%;
     }
   }
 }

@@ -13,7 +13,7 @@ import "./style.scss";
 
 registerBlockType("rs/timeline-slider-child", {
   title: "Timeline Slider Child",
-  icon: "slides",
+  icon: "text",
   category: "layout",
   parent: ["rs/timeline-slider"],
   attributes: {

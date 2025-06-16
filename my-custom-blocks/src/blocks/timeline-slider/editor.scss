@@ -1,17 +1,4 @@
 /* Define CSS variables for slider editor styling */
-:root {
-  --rs-slider-background: transparent;
-}
-
-.rs-timeline-slider-styles {
-  & .components-base-control {
-    margin: 0;
-  }
-
-  & .components-toggle-control {
-    padding: 1em 0;
-  }
-}
 
 /* Editor styles wrapper */
 .editor-styles-wrapper {
@@ -25,6 +12,11 @@
     padding: 1rem 0;
     background: var(--rs-slider-background);
     border: none;
+
+    h2 {
+      text-align: center;
+      color: var(--rs-slider-title-color, black);
+    }
 
     /* Inner container (if using Kadence or similar theme container wrappers) */
     > .timeline-slider-wrapper,
