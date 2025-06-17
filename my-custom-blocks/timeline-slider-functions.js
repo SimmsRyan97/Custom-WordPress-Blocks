@@ -160,9 +160,20 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateTimelineLine(tabsContainer) {
     const tabs = Array.from(tabsContainer.querySelectorAll('.tab-button'));
     const activeTab = tabsContainer.querySelector('.tab-button.active');
-    const timelineAnim = tabsContainer.closest('.slide-wrap')?.querySelector('.slider-timeline-anim');
+    
+    // Get the closest '.slide-wrap' parent
+    const slideWrap = tabsContainer.closest('.slide-wrap');
+    
+    // Find sibling '.nav-arrows.group-nav' inside the slideWrap
+    const navArrows = slideWrap.querySelector('.nav-arrows.group-nav');
+    
+    // Then find the timeline wrapper inside navArrows
+    const timelineWrapper = navArrows?.querySelector('.timeline-line-wrapper');
+    
+    // Then the animated timeline line inside the wrapper
+    const timelineAnim = timelineWrapper?.querySelector('.slider-timeline-anim');
 
-    if (activeTab && timelineAnim) {
+    if (activeTab && timelineAnim && timelineWrapper) {
       let totalWidth = 0;
 
       for (const tab of tabs) {
