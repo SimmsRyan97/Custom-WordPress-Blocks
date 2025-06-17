@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      const containerWidth = tabsContainer.offsetWidth;
+      const containerWidth = timelineWrapper.offsetWidth;
       const clampedWidth = Math.min(totalWidth, containerWidth);
 
       timelineAnim.style.left = '0';
