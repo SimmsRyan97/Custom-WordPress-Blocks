@@ -159,6 +159,10 @@
       position: relative;
       width: 100%;
       height: 2px;
+
+      @media screen and (max-width: 425px) {
+        display: none;
+      } 
     }
 
     hr.slider-timeline,

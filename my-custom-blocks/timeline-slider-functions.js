@@ -168,14 +168,16 @@ document.addEventListener('DOMContentLoaded', () => {
       for (const tab of tabs) {
         totalWidth += tab.offsetWidth;
         if (tab === activeTab) {
-          // Subtract half of the active tab width for the "halfway" effect
           totalWidth -= tab.offsetWidth / 2;
           break;
         }
       }
 
+      const containerWidth = tabsContainer.offsetWidth;
+      const clampedWidth = Math.min(totalWidth, containerWidth);
+
       timelineAnim.style.left = '0';
-      timelineAnim.style.width = `${totalWidth}px`;
+      timelineAnim.style.width = `${clampedWidth}px`;
     }
   }
 
