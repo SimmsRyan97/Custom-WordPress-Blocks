@@ -1,12 +1,19 @@
 .wp-block-rs-timeline-slider {
   width: 100%;
   position: relative;
-  background: var(--rs-slider-background, transparent);
-  padding: 1rem 0;
+  background: var(--rs-timeline-slider-background, transparent);
+  padding-top: var(--rs-timeline-slider-padding-top, var(--rs-timeline-slider-padding, 0));
+  padding-right: var(--rs-timeline-slider-padding-right, var(--rs-timeline-slider-padding, 0));
+  padding-bottom: var(--rs-timeline-slider-padding-bottom, var(--rs-timeline-slider-padding, 0));
+  padding-left: var(--rs-timeline-slider-padding-left, var(--rs-timeline-slider-padding, 0));
+  margin-top: var(--rs-timeline-slider-margin-top, var(--rs-timeline-slider-margin, 0));
+  margin-right: var(--rs-timeline-slider-margin-right, var(--rs-timeline-slider-margin, 0));
+  margin-bottom: var(--rs-timeline-slider-margin-bottom, var(--rs-timeline-slider-margin, 0));
+  margin-left: var(--rs-timeline-slider-margin-left, var(--rs-timeline-slider-margin, 0));
 
   h2 {
-    text-align: center;
-    color: var(--rs-slider-title-color, black);
+    color: var(--rs-timeline-slider-title-color, black);
+    margin: 1rem 0;
   }
 
   &.alignfull > .timeline-slider-wrapper {
@@ -43,6 +50,7 @@
     justify-content: center;
     gap: 0.5rem;
     padding: 1rem 0;
+    position: relative;
 
     &.tab-count-1 {
       justify-content: center;
@@ -70,23 +78,26 @@
 
     @media screen and (max-width: 425px) {
       flex-direction: column;
-    }
+    } 
 
     .tab-button {
       padding: 0.5rem 1rem;
-      background-color: var(--rs-slider-tab-background, transparent);
-      border-top: var(--rs-slider-tab-border-top-width, var(--rs-slider-tab-border-width, 0)) solid var(--rs-slider-tab-border-top-color, var(--rs-slider-tab-border-color, transparent));
-      border-right: var(--rs-slider-tab-border-right-width, var(--rs-slider-tab-border-width, 0)) solid var(--rs-slider-tab-border-right-color, var(--rs-slider-tab-border-color, transparent));
-      border-bottom: var(--rs-slider-tab-border-bottom-width, var(--rs-slider-tab-border-width, 0)) solid var(--rs-slider-tab-border-bottom-color, var(--rs-slider-tab-border-color, transparent));
-      border-left: var(--rs-slider-tab-border-left-width, var(--rs-slider-tab-border-width, 0)) solid var(--rs-slider-tab-border-left-color, var(--rs-slider-tab-border-color, transparent));
-      border-radius: var(--rs-slider-tab-border-radius, 0);
-      font-family: var(--rs-slider-tab-font-family, inherit);
-      font-size: var(--rs-slider-tab-font-size, 1rem);
+      background-color: var(--rs-timeline-slider-tab-background, transparent);
+      border-top: var(--rs-timeline-slider-tab-border-top-width, var(--rs-timeline-slider-tab-border-width, 0)) solid var(--rs-timeline-slider-tab-border-top-color, var(--rs-timeline-slider-tab-border-color, transparent));
+      border-right: var(--rs-timeline-slider-tab-border-right-width, var(--rs-timeline-slider-tab-border-width, 0)) solid var(--rs-timeline-slider-tab-border-right-color, var(--rs-timeline-slider-tab-border-color, transparent));
+      border-bottom: var(--rs-timeline-slider-tab-border-bottom-width, var(--rs-timeline-slider-tab-border-width, 0)) solid var(--rs-timeline-slider-tab-border-bottom-color, var(--rs-timeline-slider-tab-border-color, transparent));
+      border-left: var(--rs-timeline-slider-tab-border-left-width, var(--rs-timeline-slider-tab-border-width, 0)) solid var(--rs-timeline-slider-tab-border-left-color, var(--rs-timeline-slider-tab-border-color, transparent));
+      border-radius: var(--rs-timeline-slider-tab-border-radius, 0);
+      font-family: var(--rs-timeline-slider-tab-font-family, inherit);
+      font-size: var(--rs-timeline-slider-tab-font-size, 1rem);
       cursor: pointer;
       transition: all 0.3s ease;
+      color: var(--rs-timeline-slider-tab-color, black);
+      box-shadow: none;
 
-      &.active {
-        box-shadow: 0 4px 2px 0px rgba(0, 0, 0, .2);
+      &.active,
+      &:hover {
+        color: var(--rs-timeline-slider-tab-color-hover, black);
       }
     }
   }
@@ -124,19 +135,18 @@
     align-items: center;
 
     button {
-      background-color: var(--rs-slider-arrow-background, #f0f0f0);
-      color: var(--rs-slider-arrow-text, #333);
+      background-color: var(--rs-timeline-slider-arrow-background, #f0f0f0);
+      color: var(--rs-timeline-slider-arrow-text, #333);
       border: none;
       border-radius: 10px;
       font-size: 1rem;
       cursor: pointer;
       padding: 0.5rem 1rem;
       transition: background-color 0.3s ease, color 0.3s ease;
-      box-shadow: 0px 2px 4px 2px rgba(0, 0, 0, 0.1);
 
       &:hover:not(:disabled) {
-        background-color: var(--rs-slider-arrow-background-hover, #ddd);
-        color: var(--rs-slider-arrow-text-hover, #000);
+        background-color: var(--rs-timeline-slider-arrow-background-hover, #ddd);
+        color: var(--rs-timeline-slider-arrow-text-hover, #000);
       }
 
       &:disabled {
@@ -145,13 +155,34 @@
       }
     }
 
-    hr {
-      display: block;
-      border-color: var(--rs-slider-arrow-background, #f0f0f0);
-      border-width: 1px;
-      margin: 0;
-      height: 0;
+    .timeline-line-wrapper {
+      position: relative;
       width: 100%;
+      height: 2px;
+    }
+
+    hr.slider-timeline,
+    hr.slider-timeline-anim {
+      display: block;
+      height: 2px;
+      margin: 0;
+      border: none;
+      position: absolute;
+      top: 0;
+    }
+
+    hr.slider-timeline {
+      width: 100%;
+      background-color: var(--rs-timeline-slider-tab-color, #f0f0f0);
+    }
+
+    hr.slider-timeline-anim {
+      background-color: var(--rs-timeline-slider-tab-color-hover, #000);
+      transition: width 0.3s ease;
+      z-index: 1;
+      top: 0;
+      left: 0;
+      width: 0;
     }
   }
 }

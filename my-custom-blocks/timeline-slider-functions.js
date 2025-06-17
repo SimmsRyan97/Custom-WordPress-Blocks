@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const sliderWrapper = sliderRoot.querySelector('.timeline-slider-wrapper');
   if (!sliderWrapper) return;
 
-  // Clear original slides
   slides.forEach(slide => slide.remove());
 
   let contentContainer = sliderRoot.querySelector('.slider-content-container');
@@ -73,34 +72,43 @@ document.addEventListener('DOMContentLoaded', () => {
           s.classList.toggle('active', isTarget);
           s.dataset.active = isTarget ? 'true' : 'false';
         });
+
+        updateTimelineLine(tabsContainer);
       });
 
       tabsContainer.appendChild(tabBtn);
       contentTabsContainer.appendChild(slide);
     });
 
+    const navWrapper = document.createElement('div');
+    navWrapper.className = 'nav-arrows group-nav';
+
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'prev';
+    prevBtn.textContent = '←';
+
+    const nextBtn = document.createElement('button')
+    nextBtn.className = 'next';
+    nextBtn.textContent = '→';
+
+    const timelineWrapper = document.createElement('div');
+    timelineWrapper.className = 'timeline-line-wrapper';
+
+    const timelineBackground = document.createElement('hr');
+    timelineBackground.className = 'slider-timeline';
+
+    const timeline = document.createElement('hr');
+    timeline.className = 'slider-timeline-anim';
+
     slideWrap.appendChild(tabsContainer);
+    navWrapper.appendChild(prevBtn);
+    navWrapper.appendChild(timelineWrapper);
+    navWrapper.appendChild(nextBtn);
 
-    // Add arrows under tabs if totalGroups > 1
+    timelineWrapper.appendChild(timelineBackground);
+    timelineWrapper.appendChild(timeline);
+
     if (totalGroups > 1) {
-      const navWrapper = document.createElement('div');
-      navWrapper.className = 'nav-arrows group-nav';
-
-      const prevBtn = document.createElement('button');
-      prevBtn.className = 'prev';
-      prevBtn.textContent = '←';
-
-      const timeline = document.createElement('hr');
-
-      const nextBtn = document.createElement('button');
-      nextBtn.className = 'next';
-      nextBtn.textContent = '→';
-
-      navWrapper.appendChild(prevBtn);
-      navWrapper.appendChild(timeline);
-      navWrapper.appendChild(nextBtn);
-      slideWrap.appendChild(navWrapper);
-
       prevBtn.addEventListener('click', () => {
         if (currentGroup > 0) {
           showGroup(currentGroup - 1);
@@ -112,13 +120,16 @@ document.addEventListener('DOMContentLoaded', () => {
           showGroup(currentGroup + 1);
         }
       });
+    } else {
+      prevBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
     }
 
+    slideWrap.appendChild(navWrapper);
     slideWrap.appendChild(contentTabsContainer);
     groups.push(slideWrap);
   }
 
-  // Add all groups to content container
   groups.forEach(group => {
     contentContainer.appendChild(group);
   });
@@ -142,15 +153,44 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     currentGroup = index;
+    const activeTabs = groups[index].querySelector('.tabs');
+    if (activeTabs) updateTimelineLine(activeTabs);
   }
 
-  // Show initial group
+  function updateTimelineLine(tabsContainer) {
+    const tabs = Array.from(tabsContainer.querySelectorAll('.tab-button'));
+    const activeTab = tabsContainer.querySelector('.tab-button.active');
+    const timelineAnim = tabsContainer.closest('.slide-wrap')?.querySelector('.slider-timeline-anim');
+
+    if (activeTab && timelineAnim) {
+      let totalWidth = 0;
+
+      for (const tab of tabs) {
+        totalWidth += tab.offsetWidth;
+        if (tab === activeTab) {
+          // Subtract half of the active tab width for the "halfway" effect
+          totalWidth -= tab.offsetWidth / 2;
+          break;
+        }
+      }
+
+      timelineAnim.style.left = '0';
+      timelineAnim.style.width = `${totalWidth}px`;
+    }
+  }
+
   showGroup(0);
 
   function updateSlideHeights() {
     const sliderRoot = document.querySelector('.wp-block-rs-timeline-slider');
     if (!sliderRoot) return;
 
+    const slides = sliderRoot.querySelectorAll('.wp-block-rs-timeline-slider-child');
+    if (!slides.length) return;
+
+    let maxContentHeight = 0;
+
+    // Create a temporary off-screen container
     const tempContainer = document.createElement('div');
     tempContainer.style.position = 'absolute';
     tempContainer.style.visibility = 'hidden';
@@ -158,36 +198,49 @@ document.addEventListener('DOMContentLoaded', () => {
     tempContainer.style.width = sliderRoot.offsetWidth + 'px';
     tempContainer.style.top = '0';
     tempContainer.style.left = '0';
+    tempContainer.style.pointerEvents = 'none';
     document.body.appendChild(tempContainer);
 
-    const sliderWrapper = sliderRoot.querySelector('.timeline-slider-wrapper');
-    if (!sliderWrapper) {
-      tempContainer.remove();
-      return;
-    }
+    // Measure each slide's content height
+    slides.forEach((slide) => {
+      const clone = slide.cloneNode(true);
+      clone.style.display = 'block';
+      clone.style.position = 'static';
+      clone.style.height = 'auto';
+      clone.style.minHeight = '0';
+      clone.style.maxHeight = 'none';
+      clone.style.opacity = '1';
 
-    const clone = sliderWrapper.cloneNode(true);
-    clone.querySelectorAll('[style]').forEach(el => el.style.minHeight = null);
+      tempContainer.appendChild(clone);
+      const height = clone.offsetHeight;
+      if (height > maxContentHeight) {
+        maxContentHeight = height;
+      }
+      clone.remove();
+    });
 
-    clone.style.position = 'static';
-    clone.style.opacity = '1';
-    clone.style.visibility = 'visible';
-    clone.style.pointerEvents = 'none';
-    clone.style.height = 'auto';
-    clone.style.minHeight = '0';
-    clone.style.maxHeight = 'none';
+    // Measure ONE tabs height
+    const tabExample = sliderRoot.querySelector('.tabs');
+    const tabHeight = tabExample ? tabExample.offsetHeight : 0;
 
-    tempContainer.appendChild(clone);
+    // Measure ONE arrow group height
+    const arrowExample = sliderRoot.querySelector('.group-nav');
+    const arrowHeight = arrowExample ? arrowExample.offsetHeight : 0;
 
-    const totalHeight = clone.offsetHeight;
+    const totalHeight = maxContentHeight + tabHeight + arrowHeight;
 
-    const targets = document.querySelectorAll('.slider-content-container');
-    targets.forEach(el => el.style.minHeight = null);
-    targets.forEach(el => el.style.minHeight = `${totalHeight}px`);
+    // Apply min-height
+    document.querySelectorAll('.slider-content-container').forEach(el => {
+      el.style.minHeight = `${totalHeight}px`;
+    });
 
     tempContainer.remove();
   }
 
   updateSlideHeights();
-  window.addEventListener('resize', updateSlideHeights);
+  window.addEventListener('resize', () => {
+    updateSlideHeights();
+    const activeTabs = document.querySelector('.slide-wrap.active .tabs');
+    if (activeTabs) updateTimelineLine(activeTabs);
+  });
 });
