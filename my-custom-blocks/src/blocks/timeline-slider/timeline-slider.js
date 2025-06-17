@@ -545,7 +545,7 @@ registerBlockType("rs/timeline-slider", {
 				</BlockControls>
 
 				<div {...blockProps}>
-					<div className={`timeline-slider-wrapper ${innerContentWidth ? "kb-theme-content-width" : ""}`}>
+					<div className={`timeline-slider-wrapper ${innerContentWidth ? "use-theme-content-width" : ""}`}>
             <RichText
               tagName="h2"
               value={blockTitle}
@@ -587,7 +587,7 @@ registerBlockType("rs/timeline-slider", {
 			<>
 				{blockId && <style>{`.wp-block-rs-timeline-slider.${blockId} { ${cssVars} }`}</style>}
 				<div {...blockProps}>
-					<div className={`timeline-slider-wrapper ${innerContentWidth ? "kb-theme-content-width" : ""}`}>
+					<div className={`timeline-slider-wrapper ${innerContentWidth ? "use-theme-content-width" : ""}`}>
             <RichText.Content
               tagName="h2"
               value={blockTitle}

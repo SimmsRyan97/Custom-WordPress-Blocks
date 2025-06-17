@@ -3,7 +3,7 @@
 /* Editor styles wrapper */
 .editor-styles-wrapper {
 
-  .block-editor-block-list__layout.is-root-container[data-type="rs/timeline-slider"] {
+  .block-editor-block-list__layout.is-root-container .block-editor-block-list__block[data-type="rs/timeline-slider"] {
     max-width: unset;
   }
 
@@ -32,12 +32,12 @@
       width: 100%;
       padding-left: var(--global-content-edge-padding, 15px);
       padding-right: var(--global-content-edge-padding, 15px);
-    }
 
-    &.alignfull > .timeline-slider-wrapper {
-      max-width: var(--global-content-width, 1290px);
-      margin-left: auto;
-      margin-right: auto;
+      &.use-theme-content-width {
+        max-width: var(--global-content-width, 1290px);
+        margin-left: auto;
+        margin-right: auto;
+      }
     }
 
     /* Step 1: Hide all */
