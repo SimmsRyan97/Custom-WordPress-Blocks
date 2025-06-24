@@ -96,7 +96,9 @@
       grid-column: 2;
       grid-row: 2;
 
-
+      @media (width < 425px) {
+        display: none;
+      }
     }
 
     hr.slider-timeline,

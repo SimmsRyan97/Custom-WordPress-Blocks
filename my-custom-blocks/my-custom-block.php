@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Ryan Simms Custom Blocks
-Description: Custom Gutenberg blocks.
+Description: This plugin contains a timeline slider block. It is built primarily for Kadence but will fallback to theme variables if Kadence isn't used.
 Version: 1.1.44
 Author: Ryan Simms
 */

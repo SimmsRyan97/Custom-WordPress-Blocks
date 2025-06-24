@@ -9,7 +9,7 @@
   "keywords": [],
   "author": "Ryan Simms",
   "license": "ISC",
-  "description": "Custom Gutenberg blocks",
+  "description": "This plugin contains a timeline slider block. It is built primarily for Kadence but will fallback to theme variables if Kadence isn't used.",
   "devDependencies": {
     "@wordpress/scripts": "^19.2.4",
     "css-loader": "^7.1.2",

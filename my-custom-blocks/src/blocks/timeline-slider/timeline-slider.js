@@ -175,28 +175,28 @@ registerBlockType("rs/timeline-slider", {
 		extraClassNames: { type: "string", default: "" },
 		isLinkedPadding: { type: "boolean", default: true },
 		isLinkedMargin: { type: "boolean", default: true },
-    useCustomPadding: { type: "boolean", default: false },
-    useCustomMargin: { type: "boolean", default: false },
+		useCustomPadding: { type: "boolean", default: false },
+		useCustomMargin: { type: "boolean", default: false },
 		paddingAll: { type: "string" },
 		paddingTop: { type: "string" },
 		paddingRight: { type: "string" },
 		paddingBottom: { type: "string" },
 		paddingLeft: { type: "string" },
-    paddingTopUnit: { type: "string", default: "px" },
-    paddingRightUnit: { type: "string", default: "px" },
-    paddingBottomUnit: { type: "string", default: "px" },
-    paddingLeftUnit: { type: "string", default: "px" },
-    paddingUnit: { type: "string", default: "px" },
+		paddingTopUnit: { type: "string", default: "px" },
+		paddingRightUnit: { type: "string", default: "px" },
+		paddingBottomUnit: { type: "string", default: "px" },
+		paddingLeftUnit: { type: "string", default: "px" },
+		paddingUnit: { type: "string", default: "px" },
 		marginAll: { type: "string" },
 		marginTop: { type: "string" },
 		marginRight: { type: "string" },
 		marginBottom: { type: "string" },
 		marginLeft: { type: "string" },
-    marginTopUnit: { type: "string", default: "px" },
-    marginRightUnit: { type: "string", default: "px" },
-    marginBottomUnit: { type: "string", default: "px" },
-    marginLeftUnit: { type: "string", default: "px" },
-    marginUnit: { type: "string", default: "px" },
+		marginTopUnit: { type: "string", default: "px" },
+		marginRightUnit: { type: "string", default: "px" },
+		marginBottomUnit: { type: "string", default: "px" },
+		marginLeftUnit: { type: "string", default: "px" },
+		marginUnit: { type: "string", default: "px" },
 	},
 	supports: {
 		align: ["wide", "full", "center"],
@@ -356,16 +356,16 @@ registerBlockType("rs/timeline-slider", {
 							<>
 								<PanelBody className={"rs-timeline-general"} title={__("Title")} initialOpen={true}>
 									<TextControl label="Timeline Title" value={blockTitle} onChange={(val) => setAttributes({ blockTitle: val })} />
-                  <SelectControl
-                    label="Title Alignment"
-                    value={titleAlign}
-                    options={[
-                      { label: 'Left', value: 'left' },
-                      { label: 'Center', value: 'center' },
-                      { label: 'Right', value: 'right' },
-                    ]}
-                    onChange={(value) => setAttributes({ titleAlign: value })}
-                  />
+									<SelectControl
+										label="Title Alignment"
+										value={titleAlign}
+										options={[
+										{ label: 'Left', value: 'left' },
+										{ label: 'Center', value: 'center' },
+										{ label: 'Right', value: 'right' },
+										]}
+										onChange={(value) => setAttributes({ titleAlign: value })}
+									/>
 								</PanelBody>
 							</>
 						}
@@ -546,14 +546,14 @@ registerBlockType("rs/timeline-slider", {
 
 				<div {...blockProps}>
 					<div className={`timeline-slider-wrapper ${innerContentWidth ? "use-theme-content-width" : ""}`}>
-            <RichText
-              tagName="h2"
-              value={blockTitle}
-              onChange={(value) => setAttributes({ blockTitle: value })}
-              placeholder={__("Timeline Title")}
-              className="timeline-title"
-              style={{ textAlign: titleAlign }}
-            />
+						<RichText
+						tagName="h2"
+						value={blockTitle}
+						onChange={(value) => setAttributes({ blockTitle: value })}
+						placeholder={__("Timeline Title")}
+						className="timeline-title"
+						style={{ textAlign: titleAlign }}
+						/>
 						<InnerBlocks
 							templateLock={false}
 							template={[["rs/timeline-slider-child", {}]]}
@@ -588,12 +588,12 @@ registerBlockType("rs/timeline-slider", {
 				{blockId && <style>{`.wp-block-rs-timeline-slider.${blockId} { ${cssVars} }`}</style>}
 				<div {...blockProps}>
 					<div className={`timeline-slider-wrapper ${innerContentWidth ? "use-theme-content-width" : ""}`}>
-            <RichText.Content
-              tagName="h2"
-              value={blockTitle}
-              className="timeline-title"
-              style={{ textAlign: titleAlign }}
-            />
+						<RichText.Content
+						tagName="h2"
+						value={blockTitle}
+						className="timeline-title"
+						style={{ textAlign: titleAlign }}
+						/>
 						<InnerBlocks.Content />
 					</div>
 				</div>
