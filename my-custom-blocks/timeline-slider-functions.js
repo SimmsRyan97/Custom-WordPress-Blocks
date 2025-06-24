@@ -1,4 +1,3 @@
-// Wait until the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
   const sliderRoot = document.querySelector('.wp-block-rs-timeline-slider');
   if (!sliderRoot) return;
@@ -65,8 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
         slide.setAttribute('data-slide-id', slideId);
         slide.setAttribute('data-title', slideTitle);
         slide.classList.add('fade-slide');
-        slide.dataset.active = index === 0 ? 'true' : 'false';
-        if (index === 0) slide.classList.add('active');
+        slide.classList.remove('active');
+        slide.dataset.active = 'false';
+
+        if (index === 0) {
+          slide.classList.add('active');
+          slide.dataset.active = 'true';
+        }
 
         const tabBtn = document.createElement('button');
         tabBtn.type = 'button';
@@ -74,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tabBtn.textContent = slideTitle;
         tabBtn.dataset.target = slideId;
 
+        tabBtn.classList.remove('active');
         if (index === 0) tabBtn.classList.add('active');
 
         // Handle tab click to activate corresponding slide
@@ -213,6 +218,9 @@ document.addEventListener('DOMContentLoaded', () => {
         timelineAnim.style.width = `${clampedWidth}px`;
       }
     }
+
+    currentGroup = 0;
+    currentTabIndex = 0;
 
     showGroup(0);
     updateSlideHeights();
